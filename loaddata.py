@@ -90,22 +90,62 @@ def loadData(source, identifier, task='classification', **kwargs):
         raise ValueError('The feature and label attributes of the data need to be specified.')
 
 
-def trainTestSplit(data_dictionary, test_proportion=0.2, validation_proportion=0.2):
+def trainTestSplit(data_dictionary, method='separate', test_proportion=0.2, validation_proportion=0.2):
+
     from sklearn.model_selection import train_test_split
-    X_train_and_validation, X_test, y_train_and_validation, y_test = train_test_split(data_dictionary['data'], data_dictionary['labels'], test_size=test_proportion)
-    rescaled_validation_proportion = validation_proportion/(1 - test_proportion)
-    X_train, X_validation, y_train, y_validation = train_test_split(X_train_and_validation, y_train_and_validation, test_size=rescaled_validation_proportion)
-    return {
-        'training_features': X_train,
-        'training_labels': y_train,
-        'validation_features': X_validation,
-        'validation_labels': y_validation,
-        'test_features': X_test,
-        'test_labels': y_test
-    }
+    # Generate test set and joint test and validation set.
+    split1 = train_test_split(data_dictionary['data'], data_dictionary['labels'], test_size=test_proportion)
+    X_train_and_validation, X_test, y_train_and_validation, y_test = split1
 
+    if method == 'separate':
+        # Generate training and validation set.
+        split2 = None
+        if validation_proportion <= 0:
+            split2 = X_train_and_validation, [], y_train_and_validation, []
+            X_train, X_validation, y_train, y_validation = split2
+        else:
+            rescaled_validation_proportion = validation_proportion/(1 - test_proportion)
+            split2 = train_test_split(X_train_and_validation, y_train_and_validation, test_size=rescaled_validation_proportion)
+            X_train, X_validation, y_train, y_validation = split2
+        return {
+            'training_features': X_train,
+            'training_labels': y_train,
+            'validation_features': X_validation,
+            'validation_labels': y_validation,
+            'test_features': X_test,
+            'test_labels': y_test
+        }
 
+    elif method == 'cross-validation':
+        if validation_proportion <= 0:
+            raise ValueError('Validation data size cannot be zero for cross validation.')
+        from sklearn.model_selection import KFold
+        # Calculate number of folds from proportion of validation data
+        n_splits = int(1/validation_proportion)
+        # Create generator object
+        kf = KFold(n_splits=n_splits, shuffle=True)
+        return {
+            'index_generator': kf.split(X_train_and_validation),
+            'no_splits': kf.get_n_splits(X_train_and_validation)
+        }
+    else:
+        raise ValueError('The specified method to split the data is not recognised.')
 
-result = trainTestSplit(loadData('local', ONLINE_DOWNLOAD_PATH, feature_attributes=['Close'], label_attributes=['Open']), validation_proportion=0.3)
-for key, value in result.items():
-    print(f'{key} size: {len(value)}')
+'''
+method = 'cross-validation'
+data = loadData('local', ONLINE_DOWNLOAD_PATH, feature_attributes=['Close'], label_attributes=['Open'])
+split = trainTestSplit(data, method, validation_proportion=0.1)
+
+if method == 'separate':
+    for key, value in split.items():
+        print(f'{key} size: {len(value)}')
+
+elif method == 'cross-validation':
+    print(split['no_splits'])
+    i = 0
+    for train_index, test_index in split['index_generator']:
+        print("TRAIN:", len(train_index), "TEST:", len(test_index))
+        i += 1
+        if i == 5:
+            break
+'''
