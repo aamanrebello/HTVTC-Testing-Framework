@@ -84,13 +84,28 @@ def loadData(source, identifier, task='classification', **kwargs):
     # needs to be manipulated into the desired format.
 
     # The kwargs help decide what aspects of the data are features and labels.
-    if 'training_attributes' in kwargs.keys() and 'test_attributes' in kwargs.keys():
-        return manipulateLocalData(local_file_path, kwargs['training_attributes'], kwargs['test_attributes'])
+    if 'feature_attributes' in kwargs.keys() and 'label_attributes' in kwargs.keys():
+        return manipulateLocalData(local_file_path, kwargs['feature_attributes'], kwargs['label_attributes'])
     else:
         raise ValueError('The feature and label attributes of the data need to be specified.')
 
 
+def trainTestSplit(data_dictionary, test_proportion=0.2, validation_proportion=0.2):
+    from sklearn.model_selection import train_test_split
+    X_train_and_validation, X_test, y_train_and_validation, y_test = train_test_split(data_dictionary['data'], data_dictionary['labels'], test_size=test_proportion)
+    rescaled_validation_proportion = validation_proportion/(1 - test_proportion)
+    X_train, X_validation, y_train, y_validation = train_test_split(X_train_and_validation, y_train_and_validation, test_size=rescaled_validation_proportion)
+    return {
+        'training_features': X_train,
+        'training_labels': y_train,
+        'validation_features': X_validation,
+        'validation_labels': y_validation,
+        'test_features': X_test,
+        'test_labels': y_test
+    }
 
 
 
-print(loadData('local', 'path', training_attributes=[]))
+result = trainTestSplit(loadData('local', ONLINE_DOWNLOAD_PATH, feature_attributes=['Close'], label_attributes=['Open']), validation_proportion=0.3)
+for key, value in result.items():
+    print(f'{key} size: {len(value)}')
