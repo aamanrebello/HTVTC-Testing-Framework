@@ -5,6 +5,7 @@ import unittest
 import warnings
 import os
 
+TEST_PATH = 'datasets/test_case.csv'
 
 class TestGenerateReturnDict(unittest.TestCase):
 
@@ -18,8 +19,6 @@ class TestGenerateReturnDict(unittest.TestCase):
 
 class TestManipulateLocalData(unittest.TestCase):
 
-    PATH = 'datasets/test_case.csv'
-
     @classmethod
     def setUpClass(cls):
         # Set up test file
@@ -29,14 +28,14 @@ class TestManipulateLocalData(unittest.TestCase):
             'Height': [180, 179, 182, 177]
         }
         df = pd.DataFrame(data)
-        df.to_csv(PATH)
+        df.to_csv(TEST_PATH)
 
     @classmethod
     def tearDownClass(cls):
-        os.remove(PATH)
+        os.remove(TEST_PATH)
 
     def test_function(self):
-        result = manipulateLocalData(file_path=PATH, feature_attributes=['Age', 'Height'], label_attributes=['Name'])
+        result = manipulateLocalData(file_path=TEST_PATH, feature_attributes=['Age', 'Height'], label_attributes=['Name'])
         features = np.array([[20, 180], [21, 179], [19, 182], [18, 177]])
         labels = np.array([['Tom'], ['Jane'], ['Krisha'], ['John']])
         self.assertTrue( np.array_equal(result['features'], features) )
@@ -45,8 +44,6 @@ class TestManipulateLocalData(unittest.TestCase):
 
 class TestLoadData(unittest.TestCase):
 
-    PATH = 'datasets/test_case.csv'
-
     @classmethod
     def setUpClass(cls):
         # Set up test file
@@ -56,12 +53,12 @@ class TestLoadData(unittest.TestCase):
             'Height': [180, 179, 182, 177]
         }
         df = pd.DataFrame(data)
-        df.to_csv(PATH)
+        df.to_csv(TEST_PATH)
 
     @classmethod
     def tearDownClass(cls):
         # Remove test files
-        os.remove(PATH)
+        os.remove(TEST_PATH)
         os.remove(ONLINE_DOWNLOAD_PATH)
 
     def test_iris_data(self):
@@ -125,7 +122,7 @@ class TestLoadData(unittest.TestCase):
         self.assertEqual(np.shape(result['labels']), (1006,2))
 
     def test_local_data(self):
-        result = loadData('local', PATH, feature_attributes=['Age'], label_attributes=['Height'])
+        result = loadData('local', TEST_PATH, feature_attributes=['Age'], label_attributes=['Height'])
         self.assertEqual(np.shape(result['features']), (4,1))
         self.assertEqual(np.shape(result['labels']), (4,1))
 
@@ -141,7 +138,7 @@ class TestLoadData(unittest.TestCase):
     def test_no_feature_attributes(self):
         test = False
         try:
-            result = loadData('local', PATH, label_attributes=['attr'])
+            result = loadData('local', TEST_PATH, label_attributes=['attr'])
         except ValueError as inst:
             self.assertEqual(inst.args[0], 'The feature and label attributes of the data both need to be specified.')
             test = True
@@ -150,7 +147,7 @@ class TestLoadData(unittest.TestCase):
     def test_no_label_attributes(self):
         test = False
         try:
-            result = loadData('local', PATH, feature_attributes=['attr'])
+            result = loadData('local', TEST_PATH, feature_attributes=['attr'])
         except ValueError as inst:
             self.assertEqual(inst.args[0], 'The feature and label attributes of the data both need to be specified.')
             test = True
@@ -209,15 +206,7 @@ class TestTrainTestSplit(unittest.TestCase):
             test = True
         self.assertTrue(test)
 
+
 if __name__ == '__main__':
-    # Set up test file
-    PATH = 'datasets/test_case.csv'
-    data = {
-        'Name': ['Tom', 'Jane', 'Krisha', 'John'],
-        'Age': [20, 21, 19, 18],
-        'Height': [180, 179, 182, 177]
-    }
-    df = pd.DataFrame(data)
-    df.to_csv(PATH)
     # Run tests
     unittest.main()
