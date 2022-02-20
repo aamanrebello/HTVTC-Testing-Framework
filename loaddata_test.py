@@ -156,17 +156,17 @@ class TestLoadData(unittest.TestCase):
 
 class TestTrainTestSplit(unittest.TestCase):
 
-    def test_separate_nonzero_validation(self):
+    def test_separate_nonzero_validation_zero_test(self):
         data = loadData('sklearn', 'iris')
         result = trainTestSplit(data)
-        self.assertEqual(len(result['training_features']), 90)
-        self.assertEqual(len(result['training_labels']), 90)
+        self.assertEqual(len(result['training_features']), 120)
+        self.assertEqual(len(result['training_labels']), 120)
         self.assertEqual(len(result['validation_features']), 30)
         self.assertEqual(len(result['validation_labels']), 30)
-        self.assertEqual(len(result['test_features']), 30)
-        self.assertEqual(len(result['test_labels']), 30)
+        self.assertEqual(len(result['test_features']), 0)
+        self.assertEqual(len(result['test_labels']), 0)
 
-    def test_separate_zero_validation(self):
+    def test_separate_zero_validation_nonzero_test(self):
         data = loadData('sklearn', 'iris')
         result = trainTestSplit(data, test_proportion=0.3, validation_proportion=0.0)
         self.assertEqual(len(result['training_features']), 105)
@@ -176,15 +176,15 @@ class TestTrainTestSplit(unittest.TestCase):
         self.assertEqual(len(result['test_features']), 45)
         self.assertEqual(len(result['test_labels']), 45)
 
-    def test_cross_validation_nonzero_validation(self):
+    def test_cross_validation_nonzero_validation_zero_test(self):
         data = loadData('sklearn', 'diabetes', 'regression')
         result = trainTestSplit(data, method='cross_validation', validation_proportion=0.2)
-        self.assertEqual(result['no_splits'], 4)
+        self.assertEqual(result['no_splits'], 5)
         training_indices, validation_indices = next(result['index_generator'])
-        self.assertEqual(len(training_indices), 264)
+        self.assertEqual(len(training_indices), 353)
         self.assertEqual(len(validation_indices), 89)
-        self.assertEqual(len(result['test_features']), 89)
-        self.assertEqual(len(result['test_labels']), 89)
+        self.assertEqual(len(result['test_features']), 0)
+        self.assertEqual(len(result['test_labels']), 0)
 
     def test_cross_validation_zero_validation(self):
         data = loadData('sklearn', 'diabetes', 'regression')
