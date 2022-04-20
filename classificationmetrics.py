@@ -1,4 +1,5 @@
 import math
+from scipy.spatial import distance
 
 # Raises exception if lists have different lengths
 def ensureEqualLength(leftList, rightList):
@@ -53,7 +54,33 @@ def KullbackLeiblerDivergence(predictions, true_values, **kwargs):
             raise ValueError('The prediction and true values all need to be between 0 and 1.')
         if prediction < 0 or true < 0:
             raise ValueError('The prediction and true values all need to be between 0 and 1.')
-        return true*math.log(true+tolerance) - true*math.log(prediction+tolerance)
+        # Find probabilities of complementary events
+        prediction_c = 1 - prediction
+        true_c = 1 - true
+        # Return KL divergence
+        return true*math.log((true+tolerance)/(prediction+tolerance)) + true_c*math.log((true_c+tolerance)/(prediction_c+tolerance))
 
     KL_losses = list(map(KLTerm, predictions, true_values))
     return sum(KL_losses) / len(KL_losses)
+
+
+# Jensen-Shannon divergence
+def JensenShannonDivergence(predictions, true_values, **kwargs):
+    ensureEqualLength(predictions, true_values)
+
+    def JSTerm(prediction, true):
+        if prediction > 1 or true > 1:
+            raise ValueError('The prediction and true values all need to be between 0 and 1.')
+        if prediction < 0 or true < 0:
+            raise ValueError('The prediction and true values all need to be between 0 and 1.')
+        # Find probabilities of complementary events
+        prediction_c = 1 - prediction
+        true_c = 1 - true
+        # Create probability distributions
+        P = [prediction, prediction_c]
+        T = [true, true_c]
+        # Return JS divergence
+        return distance.jensenshannon(P, T)
+
+    JS_losses = list(map(JSTerm, predictions, true_values))
+    return sum(JS_losses) / len(JS_losses)
