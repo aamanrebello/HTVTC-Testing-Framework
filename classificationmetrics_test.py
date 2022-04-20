@@ -1,6 +1,6 @@
 from math import log
 import unittest
-from classificationmetrics import ensureEqualLength, indicatorFunction, hingeLoss, binaryCrossEntropy, KullbackLeiblerDivergence
+from classificationmetrics import ensureEqualLength, indicatorFunction, hingeLoss, binaryCrossEntropy, KullbackLeiblerDivergence, JensenShannonDivergence
 
 class TestEnsureEqualLength(unittest.TestCase):
 
@@ -130,17 +130,56 @@ class TestKullbackLeiblerDivergence(unittest.TestCase):
         self.assertTrue(test)
 
     def test_prediction(self):
-        l1 = [0.1, 0.1, 0.9, 0.5, 0.9, 0.45, 0.2, 0.1, 0.8, 0.11]
-        l2 = [0,   1,   1,   0.7, 1,   0.9,  0,   0,   0.1, 0.2]
-        expected_result = (0.105360516 + 2.30258509 + 0.105360516 + 0.693147181 + 0.105360516 + 0.778440627 + 0.223143551 + 0.105360516 + 1.47080848 + 0.534682036)/10
+        l1 = [0.1, 0.1, 0.9, 0.5, 0.9, 0.45, 0.2,  0.1,  0.8, 0.11]
+        l2 = [0.1, 0.7, 0.5, 0.1, 0.8, 0.63, 0.01, 0.15, 0.1, 0.2]
+        expected_result = (0.0 + 1.0325534177382862 + 0.5108256237659907 + 0.3680642071684971 + 0.04440300758688234 + 0.06530385821371285 + 0.18100496057056117 + 0.01223511445226829 + 1.1457255029306632 + 0.03427961210451759)/10
         result = KullbackLeiblerDivergence(l1, l2)
         self.assertAlmostEqual(expected_result, result)
 
     def test_zeroes_and_ones(self):
         l1 = [0,   0.1, 0, 0.5, 1, 0.45, 0.2,   1,   0.8, 0.11]
-        l2 = [0,   1,   1, 0.7, 1,   0.9,  0,     0,   0.1, 0.2]
-        expected_result = (0 + 2.40794561 + 23.0258509 + 0.970406053 + 0 + 0.778440627 + 0.223143551 + 23.0258509 + 1.47080848 + 0.534682036)/10
+        l2 = [0,   1,   1, 0.7, 1, 0.9,  0,     0,   0.1, 0.2]
+        expected_result = (0.0 + 2.302585092994046 + 23.025850929940457 + 0.08228287850505178 + 0.0 + 0.45335765328010824 + 0.22314355131420976 + 23.025850930040455 + 1.1457255029306632 + 0.03427961210451759)/10
         result = KullbackLeiblerDivergence(l1, l2)
+        self.assertAlmostEqual(expected_result, result)
+
+
+class TestJensenShannonDivergence(unittest.TestCase):
+
+    def test_negative_true_value(self):
+        l1 = [0.1,1,1,0.7,1]
+        l2 = [0.1,0,1,-0.1,1.0]
+        test = False
+        try:
+            result = JensenShannonDivergence(l1, l2)
+        except ValueError as inst:
+            self.assertEqual(inst.args[0], 'The prediction and true values all need to be between 0 and 1.')
+            test = True
+        self.assertTrue(test)
+
+    def test_large_prediction(self):
+        l1 = [0.1,1,1,1.1,1]
+        l2 = [0.1,0,1,0.5,1.0]
+        test = False
+        try:
+            result = JensenShannonDivergence(l1, l2)
+        except ValueError as inst:
+            self.assertEqual(inst.args[0], 'The prediction and true values all need to be between 0 and 1.')
+            test = True
+        self.assertTrue(test)
+
+    def test_prediction(self):
+        l1 = [0.1, 0.1, 0.9, 0.5, 0.9, 0.45, 0.2,  0.1,  0.8, 0.11]
+        l2 = [0.1, 0.7, 0.5, 0.1, 0.8, 0.63, 0.01, 0.15, 0.1, 0.2]
+        expected_result = (0.0 + 1.0325534177382862 + 0.5108256237659907 + 0.3680642071684971 + 0.04440300758688234 + 0.06530385821371285 + 0.18100496057056117 + 0.01223511445226829 + 1.1457255029306632 + 0.03427961210451759)/10
+        result = JensenShannonDivergence(l1, l2)
+        self.assertAlmostEqual(expected_result, result)
+
+    def test_zeroes_and_ones(self):
+        l1 = [0,   0.1, 0, 0.5, 1, 0.45, 0.2,   1,   0.8, 0.11]
+        l2 = [0,   1,   1, 0.7, 1, 0.9,  0,     0,   0.1, 0.2]
+        expected_result = (0.0 + 2.302585092994046 + 23.025850929940457 + 0.08228287850505178 + 0.0 + 0.45335765328010824 + 0.22314355131420976 + 23.025850930040455 + 1.1457255029306632 + 0.03427961210451759)/10
+        result = JensenShannonDivergence(l1, l2)
         self.assertAlmostEqual(expected_result, result)
 
 
