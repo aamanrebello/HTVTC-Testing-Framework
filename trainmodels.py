@@ -52,9 +52,9 @@ def evaluationFunctionGenerator(data, algorithm = 'svm-rbf', task='classificatio
                     p = 2 # Use Euclidean distance by default
                 else:
                     p = kwargs['p'] # Use provided value of p
-                clf = KNeighborsRegressor(n_neighbours=N, weights=weightingFunction, p=p)
+                clf = KNeighborsRegressor(n_neighbors=N, weights=weightingFunction, p=p)
             else:
-                clf = KNeighborsRegressor(n_neighbours=N, weights=weightingFunction, metric=distanceFunction)
+                clf = KNeighborsRegressor(n_neighbors=N, weights=weightingFunction, metric=distanceFunction)
             clf.fit(train_X, train_y)
             validation_predictions = clf.predict(validation_X)
             return metric(validation_y, validation_predictions, **kwargs)
@@ -71,9 +71,9 @@ def evaluationFunctionGenerator(data, algorithm = 'svm-rbf', task='classificatio
                     p = 2 # Use Euclidean distance by default
                 else:
                     p = kwargs['p'] # Use provided value of p
-                clf = KNeighborsClassifier(n_neighbours=N, weights=weightingFunction, p=p)
+                clf = KNeighborsClassifier(n_neighbors=N, weights=weightingFunction, p=p)
             else:
-                clf = KNeighborsClassifier(n_neighbours=N, weights=weightingFunction, metric=distanceFunction)
+                clf = KNeighborsClassifier(n_neighbors=N, weights=weightingFunction, metric=distanceFunction)
             clf.fit(train_X, train_y)
             validation_predictions = clf.predict(validation_X)
             return metric(validation_y, validation_predictions, **kwargs)
@@ -94,7 +94,8 @@ def evaluationFunctionGenerator(data, algorithm = 'svm-rbf', task='classificatio
 
 
 #Let's test the function
-task = 'regression'
-data = loadData(source='sklearn', identifier='diabetes', task=task)
-data_split = trainTestSplit(data)
-func = evaluationFunctionGenerator(data_split, algorithm = 'ridgeregression', task=task)
+task = 'classification'
+data = loadData(source='sklearn', identifier='breast_cancer', task=task)
+data_split = trainTestSplit(data, validation_proportion=0.3)
+func = evaluationFunctionGenerator(data_split, algorithm = 'random-forest', task=task)
+print(func(15, 10, True, 2, 5, metric=classificationmetrics.indicatorFunction))
