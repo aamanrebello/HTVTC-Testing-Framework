@@ -79,8 +79,8 @@ def JensenShannonDivergence(predictions, true_values, **kwargs):
         # Create probability distributions
         P = [prediction, prediction_c]
         T = [true, true_c]
-        # Return JS divergence
-        return distance.jensenshannon(P, T)
+        # Return JS divergence (scipy implementation returns square root: https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.jensenshannon.html)
+        return distance.jensenshannon(P, T)**2
 
     JS_losses = list(map(JSTerm, predictions, true_values))
     return sum(JS_losses) / len(JS_losses)
