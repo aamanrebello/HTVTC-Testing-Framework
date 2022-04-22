@@ -1,4 +1,4 @@
-from loaddata import loadData, trainTestSplit
+from loaddata import loadData, trainTestSplit, extractZeroOneClasses, convertZeroOne
 import regressionmetrics
 import classificationmetrics
 
@@ -13,36 +13,70 @@ def evaluationFunctionGenerator(data, algorithm = 'svm-rbf', task='classificatio
 
     # Ridge regression (1 hyperparameter)
     if algorithm == 'ridge-regression' and task=='regression':
+        
         def evaluate(alpha, metric, **kwargs):
             from sklearn.linear_model import Ridge
             clf = Ridge(alpha = alpha)
             clf.fit(train_X, train_y)
             validation_predictions = clf.predict(validation_X)
             return metric(validation_y, validation_predictions, **kwargs)
+        
         return evaluate
+
 
     # SVM using radial basis function kernel (2 hyperparameters)
     elif algorithm == 'svm-rbf' and task=='classification':
+        
         def evaluate(C, gamma, metric, **kwargs):
             from sklearn import svm
             clf = svm.SVC(C = C, kernel = 'rbf', gamma = gamma)
             clf.fit(train_X, train_y)
+            #----------determine evaluation mode---------------
+            evaluation_mode = None
+            if 'evaluation_mode' not in kwargs.keys():
+                evaluation_mode = 'prediction'
+            else:
+                evaluation_mode = kwargs['evaluation_mode']
+            #----------generate predictions based on evaluation mode---------------
+            #The default is to use class predictions
             validation_predictions = clf.predict(validation_X)
+            #This uses the raw score used to make the prediction i.e. distance from hyperplane
+            if evaluation_mode == 'raw-score': 
+                validation_predictions = clf.decision_function(validation_X)
+            #----------return final metric---------------------
             return metric(validation_y, validation_predictions, **kwargs)
+        
         return evaluate
+
 
     # SVM using polynomial kernel (4 hyperparameters)
     elif algorithm == 'svm-polynomial' and task=='classification':
+        
         def evaluate(C, gamma, constant_term, degree, metric, **kwargs):
             from sklearn import svm
             clf = svm.SVC(C = C, kernel = 'poly', gamma = gamma, degree = degree, coef0 = constant_term)
             clf.fit(train_X, train_y)
+            #----------determine evaluation mode---------------
+            evaluation_mode = None
+            if 'evaluation_mode' not in kwargs.keys():
+                evaluation_mode = 'prediction'
+            else:
+                evaluation_mode = kwargs['evaluation_mode']
+            #----------generate predictions based on evaluation mode---------------
+            #The default is to use class predictions
             validation_predictions = clf.predict(validation_X)
+            #This uses the raw score used to make the prediction i.e. distance from hyperplane
+            if evaluation_mode == 'raw-score': 
+                validation_predictions = clf.decision_function(validation_X)
+            #----------return final metric---------------------
             return metric(validation_y, validation_predictions, **kwargs)
+        
         return evaluate
+
 
     # K-nearest neighbour regression (3 hyperparameters)    
     elif algorithm == 'knn-regression' and task == 'regression':
+        
         def evaluate(N, weightingFunction, distanceFunction, metric, **kwargs):
             from sklearn.neighbors import KNeighborsRegressor
             clf = None
@@ -58,13 +92,17 @@ def evaluationFunctionGenerator(data, algorithm = 'svm-rbf', task='classificatio
             clf.fit(train_X, train_y)
             validation_predictions = clf.predict(validation_X)
             return metric(validation_y, validation_predictions, **kwargs)
+        
         return evaluate
+
 
     # K-nearest neighbour classification (3 hyperparameters)
     elif algorithm == 'knn-classification' and task=='classification':
+        
         def evaluate(N, weightingFunction, distanceFunction, metric, **kwargs):
             from sklearn.neighbors import KNeighborsClassifier
             clf = None
+            #----------determine distance metric to be used---------------
             if distanceFunction == 'minkowski': # Stands for generalised Minkowski distance
                 p = None
                 if 'p' not in kwargs.keys():
@@ -75,18 +113,35 @@ def evaluationFunctionGenerator(data, algorithm = 'svm-rbf', task='classificatio
             else:
                 clf = KNeighborsClassifier(n_neighbors=N, weights=weightingFunction, metric=distanceFunction)
             clf.fit(train_X, train_y)
+            #----------determine evaluation mode---------------
+            evaluation_mode = None
+            if 'evaluation_mode' not in kwargs.keys():
+                evaluation_mode = 'prediction'
+            else:
+                evaluation_mode = kwargs['evaluation_mode']
+            #----------generate predictions based on evaluation mode---------------
+            #The default is to use class predictions
             validation_predictions = clf.predict(validation_X)
+            #This uses the probability that the sample is from class 1
+            if evaluation_mode == 'probability':
+                extract_at_index_1 = lambda a : a[1]
+                validation_predictions = list(map(extract_at_index_1, clf.predict_proba(validation_X)))
+            #----------return final metric---------------------
             return metric(validation_y, validation_predictions, **kwargs)
+        
         return evaluate
+
 
     # Random forest classification (6 hyperparameters)
     elif algorithm == 'random-forest' and task=='classification':
+        
         def evaluate(no_trees, max_tree_depth, bootstrap, min_samples_split, no_features, metric, **kwargs):
             from sklearn.ensemble import RandomForestClassifier
             clf = RandomForestClassifier(n_estimators=no_trees, max_depth=max_tree_depth, bootstrap=bootstrap, min_samples_split=min_samples_split, max_features=no_features, random_state=0)
             clf.fit(train_X, train_y)
             validation_predictions = clf.predict(validation_X)
             return metric(validation_y, validation_predictions, **kwargs)
+        
         return evaluate
 
     else:
