@@ -1,3 +1,4 @@
+#-----IMPORTANT CONSTANTS-------------------------------------------------------
 taskTypeMap = {
     'c': 'classification',
     'ic': 'imageclassification',
@@ -18,8 +19,10 @@ datasetTaskMap = {
 
 DOWNLOAD_PATH = './datasets'
 ONLINE_DOWNLOAD_PATH = DOWNLOAD_PATH + '/online_data.csv'
+#-----------------------------------------------------------------------------
 
 
+#-------UTILITY FUNCTIONS FOR DATA--------------------------------------------
 def generateReturnDict(features, labels):
     return {
         'features': features,
@@ -33,6 +36,38 @@ def manipulateLocalData(file_path=ONLINE_DOWNLOAD_PATH, feature_attributes=[], l
     return generateReturnDict(df[feature_attributes].to_numpy(), df[label_attributes].to_numpy())
 
 
+#Used to convert multiclass classification into a binary classification
+def extractZeroOneClasses(datadict, zeroClassLabel=0, oneClassLabel=1):
+    features = datadict['features']
+    labels = datadict['labels']
+    newfeatures = []
+    newlabels = []
+    for index in range(len(labels)):
+        feature = features[index]
+        label = labels[index]
+        if label == zeroClassLabel:
+            newlabels.append(0)
+            newfeatures.append(feature)
+        elif label == oneClassLabel:
+            newlabels.append(1)
+            newfeatures.append(feature)
+    return generateReturnDict(newfeatures, newlabels)
+
+
+#Example use case is if you want to label one class -1 and the other +1 instead of 0 and 1 respectively
+def convertZeroOne(datadict, newZeroLabel, newOneLabel, oldZeroLabel=0, oldOneLabel=1):
+        labels = datadict['labels']
+        for index in range(len(labels)):
+            curr_label = labels[index]
+            if curr_label == oldZeroLabel:
+                labels[index] = newZeroLabel
+            elif curr_label == oldOneLabel:
+                labels[index] = newOneLabel
+        return generateReturnDict(datadict['features'], labels)
+#-------------------------------------------------------------------------------
+    
+
+#-------------CAN LOAD DATA FROM A VARIETY OF SOURCES---------------------------
 def loadData(source, identifier, task='classification', **kwargs):
     local_file_path = None
 
@@ -90,8 +125,10 @@ def loadData(source, identifier, task='classification', **kwargs):
         return manipulateLocalData(local_file_path, kwargs['feature_attributes'], kwargs['label_attributes'])
     else:
         raise ValueError('The feature and label attributes of the data both need to be specified.')
+#-------------------------------------------------------------------------------
 
-
+    
+#---------------SPLITS LOADED DATA INTO TRAIN, VALIDATION & TEST SETS-----------
 # Test proportion is zero because we probably will only need training and validation sets.
 def trainTestSplit(data_dictionary, method='separate', validation_proportion=0.2, test_proportion=0.0):
     from sklearn.model_selection import train_test_split
@@ -139,7 +176,7 @@ def trainTestSplit(data_dictionary, method='separate', validation_proportion=0.2
 
     else:
         raise ValueError('The specified method to split the data is not recognised.')
-
+#------------------------------------------------------------------------
 
 
 '''
