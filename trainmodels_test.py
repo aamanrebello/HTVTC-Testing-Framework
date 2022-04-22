@@ -1,5 +1,5 @@
 from trainmodels import evaluationFunctionGenerator
-from loaddata import loadData, trainTestSplit, extractZeroOneClasses
+from loaddata import loadData, trainTestSplit, extractZeroOneClasses, convertZeroOne
 import regressionmetrics
 import classificationmetrics
 import unittest
@@ -102,8 +102,8 @@ class TestEvaluationFunctionGenerator(unittest.TestCase):
         self.assertTrue(isinstance(error, float))
         self.assertTrue(error >= 0)
 
-    def test_svm_rbf(self):
-        #Check whether algorithm returns credible results
+    def test_svm_rbf_prediction(self):
+        #Check whether algorithm returns credible results when directly making class predictions
         task = 'classification'
         data = loadData(source='sklearn', identifier='iris', task=task)
         binary_data = extractZeroOneClasses(data)
@@ -116,8 +116,23 @@ class TestEvaluationFunctionGenerator(unittest.TestCase):
         self.assertTrue(isinstance(error, float))
         self.assertTrue(error >= 0)
 
-    def test_svm_polynomial(self):
-        #Check whether algorithm returns credible results
+    def test_svm_rbf_probability(self):
+        #Check whether algorithm returns credible results when using raw prediction score
+        task = 'classification'
+        data = loadData(source='sklearn', identifier='iris', task=task)
+        binary_data = extractZeroOneClasses(data)
+        adjusted_data = convertZeroOne(binary_data, -1, 1)
+        data_split = trainTestSplit(adjusted_data)
+        func = evaluationFunctionGenerator(data_split, algorithm='svm-rbf', task=task)
+        self.assertIsNotNone(func)
+        
+        error = func(C=1.0, gamma=0.1, metric=classificationmetrics.hingeLoss, evaluation_mode='raw-score')
+        self.assertIsNotNone(error)
+        self.assertTrue(isinstance(error, float))
+        self.assertTrue(error >= 0)
+
+    def test_svm_polynomial_prediction(self):
+        #Check whether algorithm returns credible results when directly making class predictions
         task = 'classification'
         data = loadData(source='sklearn', identifier='wine', task=task)
         binary_data = extractZeroOneClasses(data)
@@ -126,6 +141,21 @@ class TestEvaluationFunctionGenerator(unittest.TestCase):
         self.assertIsNotNone(func)
         
         error = func(C=1.0, gamma=0.1, constant_term=0.1, degree=1, metric=classificationmetrics.indicatorFunction)
+        self.assertIsNotNone(error)
+        self.assertTrue(isinstance(error, float))
+        self.assertTrue(error >= 0)
+
+    def test_svm_polynomial_probability(self):
+        #Check whether algorithm returns credible results when using raw prediction score
+        task = 'classification'
+        data = loadData(source='sklearn', identifier='wine', task=task)
+        binary_data = extractZeroOneClasses(data)
+        adjusted_data = convertZeroOne(binary_data, -1, 1)
+        data_split = trainTestSplit(adjusted_data)
+        func = evaluationFunctionGenerator(data_split, algorithm='svm-polynomial', task=task)
+        self.assertIsNotNone(func)
+        
+        error = func(C=1.0, gamma=0.1, constant_term=0.1, degree=1, metric=classificationmetrics.hingeLoss, evaluation_mode='raw-score')
         self.assertIsNotNone(error)
         self.assertTrue(isinstance(error, float))
         self.assertTrue(error >= 0)
@@ -143,8 +173,8 @@ class TestEvaluationFunctionGenerator(unittest.TestCase):
         self.assertTrue(isinstance(error, float))
         self.assertTrue(error >= 0)
 
-    def test_KNN_classification(self):
-        #Check whether algorithm returns credible results
+    def test_KNN_classification_prediction(self):
+        #Check whether algorithm returns credible results when directly making class predictions
         task = 'classification'
         data = loadData(source='sklearn', identifier='breast_cancer', task=task)
         data_split = trainTestSplit(data)
@@ -152,6 +182,19 @@ class TestEvaluationFunctionGenerator(unittest.TestCase):
         self.assertIsNotNone(func)
         
         error = func(N=10, weightingFunction='distance', distanceFunction='minkowski', p=1, metric=classificationmetrics.indicatorFunction)
+        self.assertIsNotNone(error)
+        self.assertTrue(isinstance(error, float))
+        self.assertTrue(error >= 0)
+
+    def test_KNN_classification_probability(self):
+        #Check whether algorithm returns credible results when using probability score
+        task = 'classification'
+        data = loadData(source='sklearn', identifier='breast_cancer', task=task)
+        data_split = trainTestSplit(data)
+        func = evaluationFunctionGenerator(data_split, algorithm='knn-classification', task=task)
+        self.assertIsNotNone(func)
+        
+        error = func(N=10, weightingFunction='distance', distanceFunction='minkowski', p=1, metric=classificationmetrics.binaryCrossEntropy, evaluation_mode='probability')
         self.assertIsNotNone(error)
         self.assertTrue(isinstance(error, float))
         self.assertTrue(error >= 0)
