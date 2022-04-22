@@ -1,4 +1,7 @@
 from trainmodels import evaluationFunctionGenerator
+from loaddata import loadData, trainTestSplit
+import regressionmetrics
+import classificationmetrics
 import unittest
 
 mockRegressionData = {
@@ -82,6 +85,32 @@ class TestEvaluationFunctionGenerator(unittest.TestCase):
             self.assertEqual(inst.args[0], 'The algorithm specified is not recognised.')
             test = True
         self.assertTrue(test)
+
+    def test_ridge_regression(self):
+        #Check whether algorithm returns credible results
+        task = 'regression'
+        data = loadData(source='sklearn', identifier='diabetes', task=task)
+        data_split = trainTestSplit(data)
+        func = evaluationFunctionGenerator(data_split, algorithm='ridge-regression', task=task)
+        self.assertIsNotNone(func)
+        
+        error = func(alpha=0.1, metric=regressionmetrics.mse)
+        self.assertIsNotNone(error)
+        self.assertTrue(isinstance(error, float))
+        self.assertTrue(error >= 0)
+
+    def test_KNN_regression(self):
+        #Check whether algorithm returns credible results
+        task = 'regression'
+        data = loadData(source='sklearn', identifier='california_housing', task=task)
+        data_split = trainTestSplit(data, validation_proportion=0.3)
+        func = evaluationFunctionGenerator(data_split, algorithm='knn-regression', task=task)
+        self.assertIsNotNone(func)
+        
+        error = func(N=5, weightingFunction='uniform', distanceFunction='minkowski', p=2, metric=regressionmetrics.mae)
+        self.assertIsNotNone(error)
+        self.assertTrue(isinstance(error, float))
+        self.assertTrue(error >= 0)
     
 if __name__ == '__main__':
     # Run tests
