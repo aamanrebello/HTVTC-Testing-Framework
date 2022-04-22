@@ -12,7 +12,7 @@ def evaluationFunctionGenerator(data, algorithm = 'svm-rbf', task='classificatio
     validation_y = data['validation_labels']
 
     # Ridge regression (1 hyperparameter)
-    if algorithm == 'ridgeregression' and task=='regression':
+    if algorithm == 'ridge-regression' and task=='regression':
         def evaluate(alpha, metric, **kwargs):
             from sklearn.linear_model import Ridge
             clf = Ridge(alpha = alpha)
@@ -91,11 +91,3 @@ def evaluationFunctionGenerator(data, algorithm = 'svm-rbf', task='classificatio
 
     else:
         raise ValueError('The algorithm specified is not recognised.')
-
-
-#Let's test the function
-task = 'classification'
-data = loadData(source='sklearn', identifier='breast_cancer', task=task)
-data_split = trainTestSplit(data, validation_proportion=0.3)
-func = evaluationFunctionGenerator(data_split, algorithm = 'random-forest', task=task)
-print(func(15, 10, True, 2, 5, metric=classificationmetrics.indicatorFunction))
