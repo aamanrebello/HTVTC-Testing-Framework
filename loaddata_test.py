@@ -1,4 +1,5 @@
-from loaddata import generateReturnDict, manipulateLocalData, loadData, trainTestSplit, ONLINE_DOWNLOAD_PATH
+from loaddata import generateReturnDict, manipulateLocalData, loadData, trainTestSplit, extractZeroOneClasses, convertZeroOne
+from loaddata import ONLINE_DOWNLOAD_PATH
 import pandas as pd
 import numpy as np
 import unittest
@@ -7,6 +8,7 @@ import os
 
 TEST_PATH = 'datasets/test_case.csv'
 
+#-------------------------------------------------------------------------------
 class TestGenerateReturnDict(unittest.TestCase):
 
     def test_function(self):
@@ -15,8 +17,10 @@ class TestGenerateReturnDict(unittest.TestCase):
         result = generateReturnDict(features, labels)
         self.assertTrue( np.array_equal(result['features'], features) )
         self.assertTrue( np.array_equal(result['labels'], labels) )
+#--------------------------------------------------------------------------------
 
 
+#--------------------------------------------------------------------------------
 class TestManipulateLocalData(unittest.TestCase):
 
     @classmethod
@@ -40,8 +44,65 @@ class TestManipulateLocalData(unittest.TestCase):
         labels = np.array([['Tom'], ['Jane'], ['Krisha'], ['John']])
         self.assertTrue( np.array_equal(result['features'], features) )
         self.assertTrue( np.array_equal(result['labels'], labels) )
+#---------------------------------------------------------------------------------
 
 
+#---------------------------------------------------------------------------------
+class TestExtractZeroOneClasses(unittest.TestCase):
+
+    def test_default_params(self):
+        data = {
+            'features': [[1,2], [2,2], [1,1], [0,3], [2,4]],
+            'labels': [0, 1, 2, 3, 0]
+        }
+        result = extractZeroOneClasses(data)
+        self.assertTrue( np.array_equal(result['features'], [[1,2], [2,2], [2,4]]) )
+        self.assertTrue( np.array_equal(result['labels'], [0, 1, 0]) )
+
+    def test_non_default_params(self):
+        data = {
+            'features': [[1,2], [2,2], [1,1], [0,3], [2,4]],
+            'labels': [2, 3, 2, 3, 0]
+        }
+        result = extractZeroOneClasses(data, 2, 3)
+        self.assertTrue( np.array_equal(result['features'], [[1,2], [2,2], [1,1], [0,3]]) )
+        self.assertTrue( np.array_equal(result['labels'], [0, 1, 0, 1]) )
+#-----------------------------------------------------------------------------------
+        
+
+#-----------------------------------------------------------------------------------
+class TestConvertZeroOne(unittest.TestCase):
+
+    def test_default_params(self):
+        data = {
+            'features': [[1,2], [2,2], [1,1], [0,3], [2,4]],
+            'labels': [1, 0, 2, 0, 3]
+        }
+        result = convertZeroOne(data, 3, 1)
+        self.assertTrue( np.array_equal(result['features'], data['features']) )
+        self.assertTrue( np.array_equal(result['labels'], [1, 3, 2, 3, 3]) )
+
+    def test_non_default_params(self):
+        data = {
+            'features': [[1,2], [2,2], [1,1], [0,3], [2,4]],
+            'labels': [2, 3, 2, 3, 3]
+        }
+        result = convertZeroOne(data, -1, 1, 2, 3)
+        self.assertTrue( np.array_equal(result['features'], data['features']) )
+        self.assertTrue( np.array_equal(result['labels'], [-1, 1, -1, 1, 1]) )
+
+    def test_no_change(self):
+        data = {
+            'features': [[1,2], [2,2], [1,1], [0,3], [2,4]],
+            'labels': [2, 3, 2, 3, 3]
+        }
+        result = convertZeroOne(data, -1, 1)
+        self.assertTrue( np.array_equal(result['features'], data['features']) )
+        self.assertTrue( np.array_equal(result['labels'], [2, 3, 2, 3, 3]) )
+#------------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------------
 class TestLoadData(unittest.TestCase):
 
     @classmethod
@@ -152,8 +213,10 @@ class TestLoadData(unittest.TestCase):
             self.assertEqual(inst.args[0], 'The feature and label attributes of the data both need to be specified.')
             test = True
         self.assertTrue(test)
+#------------------------------------------------------------------------------------
 
 
+#------------------------------------------------------------------------------------
 class TestTrainTestSplit(unittest.TestCase):
 
     def test_separate_nonzero_validation_zero_test(self):
@@ -205,6 +268,7 @@ class TestTrainTestSplit(unittest.TestCase):
             self.assertEqual(inst.args[0], 'The specified method to split the data is not recognised.')
             test = True
         self.assertTrue(test)
+#------------------------------------------------------------------------------
 
 
 if __name__ == '__main__':
