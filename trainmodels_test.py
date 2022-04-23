@@ -199,8 +199,8 @@ class TestEvaluationFunctionGenerator(unittest.TestCase):
         self.assertTrue(isinstance(error, float))
         self.assertTrue(error >= 0)
 
-    def test_random_forest(self):
-        #Check whether algorithm returns credible results
+    def test_random_forest_prediction(self):
+        #Check whether algorithm returns credible results when directly making class predictions
         task = 'classification'
         data = loadData(source='sklearn', identifier='breast_cancer', task=task)
         data_split = trainTestSplit(data, validation_proportion=0.3)
@@ -208,6 +208,19 @@ class TestEvaluationFunctionGenerator(unittest.TestCase):
         self.assertIsNotNone(func)
         
         error = func(15, 10, True, 2, 5, metric=classificationmetrics.indicatorFunction)
+        self.assertIsNotNone(error)
+        self.assertTrue(isinstance(error, float))
+        self.assertTrue(error >= 0)
+
+    def test_random_forest_probability(self):
+        #Check whether algorithm returns credible results when using probability score
+        task = 'classification'
+        data = loadData(source='sklearn', identifier='breast_cancer', task=task)
+        data_split = trainTestSplit(data, validation_proportion=0.3)
+        func = evaluationFunctionGenerator(data_split, algorithm = 'random-forest', task=task)
+        self.assertIsNotNone(func)
+        
+        error = func(15, 10, True, 2, 5, metric=classificationmetrics.KullbackLeiblerDivergence, evaluation_mode='probability')
         self.assertIsNotNone(error)
         self.assertTrue(isinstance(error, float))
         self.assertTrue(error >= 0)
