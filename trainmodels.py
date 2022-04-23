@@ -1,7 +1,3 @@
-from loaddata import loadData, trainTestSplit, extractZeroOneClasses, convertZeroOne
-import regressionmetrics
-import classificationmetrics
-
 # Returns a function 'evaluate' that accepts hyperparameters for the specified
 # machine learning algorithm and evaluates a model trained with these hyperparameters
 # on the validation dataset
@@ -139,7 +135,20 @@ def evaluationFunctionGenerator(data, algorithm = 'svm-rbf', task='classificatio
             from sklearn.ensemble import RandomForestClassifier
             clf = RandomForestClassifier(n_estimators=no_trees, max_depth=max_tree_depth, bootstrap=bootstrap, min_samples_split=min_samples_split, max_features=no_features, random_state=0)
             clf.fit(train_X, train_y)
+            #----------determine evaluation mode---------------
+            evaluation_mode = None
+            if 'evaluation_mode' not in kwargs.keys():
+                evaluation_mode = 'prediction'
+            else:
+                evaluation_mode = kwargs['evaluation_mode']
+            #----------generate predictions based on evaluation mode---------------
+            #The default is to use class predictions
             validation_predictions = clf.predict(validation_X)
+            #This uses the probability that the sample is from class 1
+            if evaluation_mode == 'probability':
+                extract_at_index_1 = lambda a : a[1]
+                validation_predictions = list(map(extract_at_index_1, clf.predict_proba(validation_X)))
+            #----------return final metric---------------------
             return metric(validation_y, validation_predictions, **kwargs)
         
         return evaluate
