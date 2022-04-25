@@ -82,9 +82,9 @@ def evaluationFunctionGenerator(data, algorithm = 'svm-rbf', task='classificatio
                     p = 2 # Use Euclidean distance by default
                 else:
                     p = kwargs['p'] # Use provided value of p
-                clf = KNeighborsRegressor(n_neighbors=N, weights=weightingFunction, p=p)
+                clf = KNeighborsRegressor(n_neighbors=int(N), weights=weightingFunction, p=p)
             else:
-                clf = KNeighborsRegressor(n_neighbors=N, weights=weightingFunction, metric=distanceFunction)
+                clf = KNeighborsRegressor(n_neighbors=int(N), weights=weightingFunction, metric=distanceFunction)
             clf.fit(train_X, train_y)
             validation_predictions = clf.predict(validation_X)
             return metric(validation_y, validation_predictions, **kwargs)
@@ -105,9 +105,9 @@ def evaluationFunctionGenerator(data, algorithm = 'svm-rbf', task='classificatio
                     p = 2 # Use Euclidean distance by default
                 else:
                     p = kwargs['p'] # Use provided value of p
-                clf = KNeighborsClassifier(n_neighbors=N, weights=weightingFunction, p=p)
+                clf = KNeighborsClassifier(n_neighbors=int(N), weights=weightingFunction, p=p)
             else:
-                clf = KNeighborsClassifier(n_neighbors=N, weights=weightingFunction, metric=distanceFunction)
+                clf = KNeighborsClassifier(n_neighbors=int(N), weights=weightingFunction, metric=distanceFunction)
             clf.fit(train_X, train_y)
             #----------determine evaluation mode---------------
             evaluation_mode = None
@@ -128,12 +128,12 @@ def evaluationFunctionGenerator(data, algorithm = 'svm-rbf', task='classificatio
         return evaluate
 
 
-    # Random forest classification (6 hyperparameters)
+    # Random forest classification (5 hyperparameters)
     elif algorithm == 'random-forest' and task=='classification':
         
         def evaluate(no_trees, max_tree_depth, bootstrap, min_samples_split, no_features, metric, **kwargs):
             from sklearn.ensemble import RandomForestClassifier
-            clf = RandomForestClassifier(n_estimators=no_trees, max_depth=max_tree_depth, bootstrap=bootstrap, min_samples_split=min_samples_split, max_features=no_features, random_state=0)
+            clf = RandomForestClassifier(n_estimators=int(no_trees), max_depth=int(max_tree_depth), bootstrap=bootstrap, min_samples_split=int(min_samples_split), max_features=int(no_features), random_state=0)
             clf.fit(train_X, train_y)
             #----------determine evaluation mode---------------
             evaluation_mode = None
