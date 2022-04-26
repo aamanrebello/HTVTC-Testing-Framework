@@ -1,9 +1,9 @@
-from tensorsearch import higherDimensionalIndex, findBestValues
+from tensorsearch import higherDimensionalIndex, findBestValues, hyperparametersFromIndices
 import tensorly as tl
 import numpy as np
 import unittest
 
-
+#------------------------------------------------------------------------------------------
 class TestHigherDimensionalIndex(unittest.TestCase):
 
     def test_zero(self):
@@ -49,8 +49,10 @@ RANDOM_TENSOR = tl.tensor([[[[38,  8],
                             [[22, 89],
                              [62, 51],
                              [18, 29]]]])
+#------------------------------------------------------------------------------------------
 
 
+#------------------------------------------------------------------------------------------
 class TestFindBestValues(unittest.TestCase):
 
     def test_arange_min_1(self):
@@ -106,6 +108,90 @@ class TestFindBestValues(unittest.TestCase):
         result = findBestValues(RANDOM_TENSOR, smallest=False, number_of_values=4)
         self.assertTrue( np.allclose(result['values'], [86, 89, 99, 98]) )
         self.assertTrue( np.allclose(result['indices'], [(0,1,0,0), (2,1,0,1), (1,0,0,0), (1,0,2,1)]) )
+#------------------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------------------
+class TestHyperparametersFromIndices(unittest.TestCase):
+
+    def test_unequal_dimensions(self):
+        tensor = tl.tensor(np.arange(24).reshape((4,2,3)))
+        result = findBestValues(tensor, smallest=False, number_of_values=4)
+        # Construct a range dictionary commensurate with tensor dimensions
+        range_dict = {
+            'alpha': {
+                'start': 1,
+                'end': 4,
+                'interval': 1,
+            },
+        }
+        test = False
+        try:
+            #Obtain hyperparameters corresponding to the best values
+            hyperparameters = hyperparametersFromIndices(result['indices'], range_dict)
+        except ValueError as inst:
+            self.assertEqual(inst.args[0], 'The indices (3) and hyperparameter configuration (1) have unequal dimensions.')
+            test = True
+        self.assertTrue(test)
+        
+
+    def test_arange_max_4(self):
+        tensor = tl.tensor(np.arange(24).reshape((4,2,3)))
+        result = findBestValues(tensor, smallest=False, number_of_values=4)
+        # Construct a range dictionary commensurate with tensor dimensions
+        range_dict = {
+            'alpha': {
+                'start': 1,
+                'end': 4,
+                'interval': 1,
+            },
+            'beta': {
+                'values': [True, False],
+            },
+            'gamma': {
+                'start': 0.1,
+                'end': 0.9,
+                'interval': 0.4,
+            },
+        }
+        #Obtain hyperparameters corresponding to the best values
+        hyperparameters = hyperparametersFromIndices(result['indices'], range_dict)
+        #Check the hyperparameters
+        expected_result = [{'alpha': 4, 'beta': True, 'gamma': 0.9},
+                           {'alpha': 4, 'beta': False, 'gamma': 0.1},
+                           {'alpha': 4, 'beta': False, 'gamma': 0.5},
+                           {'alpha': 4, 'beta': False, 'gamma': 0.9}]
+        for i in range(len(expected_result)):
+            self.assertEqual( expected_result[i], hyperparameters[i] )
+
+    def test_random_min_3(self):
+        result = findBestValues(RANDOM_TENSOR, number_of_values=3)
+        # Construct a range dictionary commensurate with tensor dimensions
+        range_dict = {
+            'a': {
+                'values': ['a', 'b', 'c']
+            },
+            'b': {
+                'values': [1,2],
+            },
+            'c': {
+                'start': 0,
+                'end': 2,
+                'interval': 1,
+            },
+            'd': {
+                'values': [True, False],
+            },
+        }
+        #Obtain hyperparameters corresponding to the best values
+        hyperparameters = hyperparametersFromIndices(result['indices'], range_dict)
+        #Check the hyperparameters
+        expected_result = [{'a': 'b', 'b': 2, 'c': 2, 'd': False},
+                           {'a': 'c', 'b': 1, 'c': 1, 'd': True},
+                           {'a': 'b', 'b': 1, 'c': 1, 'd': False}]
+        for i in range(len(expected_result)):
+            self.assertEqual( expected_result[i], hyperparameters[i] )
+#------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     unittest.main()
