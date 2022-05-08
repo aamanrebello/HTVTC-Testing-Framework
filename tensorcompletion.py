@@ -144,6 +144,50 @@ def tensorcomplete_CP_WOPT_sparse(np_array, known_indices, rank, stepsize=0.01):
 #=============================================================================================
 
 
-def tensorcomplete_TKD(np_array):
-    tensor = tensorly.tensor(np_array)
-    pass
+#=============================================================================================
+def tensorcomplete_TKD_Geng_Miles(np_array, known_indices, rank_list, hooi_tolerance, objective_tolerance=1e-8):
+    #Generate tensor with unknown elements initialised to mean of known elements
+    #Find elements corresponding to known indices and take their mean
+    known_values = [np_array[index] for index in known_indices]
+    no_known_values = len(known_indices)
+    known_mean = np.mean(known_values)
+    #First generate tensor with all known elements equal to mean
+    initialisation = np.full(shape=np.shape(np_array), fill_value=known_mean)
+    #Set known index positions to the corresponding known values
+    for i in range(no_known_values):
+        index = known_indices[i]
+        initialisation[index] = known_values[i]
+    #Generate tensor from initialisation
+    target_tensor = tl.tensor(initialisation)
+    #Perform initial HOOI to obtain core and factor matrices that form the initial prediction tensor
+    core, factors = tl.decomposition.tucker(tensor=target_tensor, rank=rank_list, tol=hooi_tolerance)
+    prediction_tensor = tl.tucker_tensor.tucker_to_tensor((core,factors))
+
+    def convergence_condition(current_fval, tol):
+        return current_fval < tol
+
+    #Initial values allow the loop to progress
+    prev_fval = 1
+    current_fval = 1
+    #Returned as readings
+    converged = True
+    iterations = 0
+    while not convergence_condition(current_fval, objective_tolerance):
+        #Update target tensor according to values in predicted tensor corresponding to unknown values
+        target_tensor = tl.copy(prediction_tensor)
+        for i in range(no_known_values):
+            index = known_indices[i]
+            target_tensor[index] = known_values[i]
+        core, factors = tl.decomposition.tucker(tensor=target_tensor, rank=rank_list, tol=hooi_tolerance)
+        prediction_tensor = tl.tucker_tensor.tucker_to_tensor((core,factors))
+        #Update function values
+        prev_fval = current_fval
+        current_fval = tl.norm(prediction_tensor - target_tensor)
+        #Break in case of no decrease in fvalue (could be due to incorrect rank, too few elements)
+        if iterations > 0 and current_fval > prev_fval:
+            converged=False
+            break
+        iterations += 1
+
+    return prediction_tensor, current_fval, iterations, converged
+#=============================================================================================
