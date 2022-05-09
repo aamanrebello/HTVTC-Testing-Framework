@@ -44,13 +44,41 @@ class TestTensorcomplete_CP_WOPT_dense(unittest.TestCase):
         t, f, i = tensorcomplete_CP_WOPT_dense(incomplete_tensor, sampled_indices, 3, stepsize=0.0000001)
         difference = np.linalg.norm(np.ndarray.flatten(t - overall_tensor))
         end_time = time.perf_counter()
-        print('\n----SUBJECTIVE TEST RESULTS for 50x40x20 DENSE AFTER CONVERGENCE-----')
+        print('\n----SUBJECTIVE TEST RESULTS for 50x40x30 DENSE CPD CONSTRUCT AFTER CONVERGENCE-----')
         print(f'Norm Difference Between predicted and true: {difference}')
         print(f'Objective function value: {f}')
         print(f'Number of iterations: {i}')
         print(f'Execution time: {end_time - start_time}')
 
-
+    def test_504030_random_tensor(self):
+        #Generate random vectors whose outer producs generate the rank-1 components
+        start_time = time.perf_counter()
+        scaling = 2.5
+        overall_tensor = scaling*np.random.normal(size=(50,40,30))
+        #Generate all possible combinations of indices
+        value_lists = []
+        for dim_size in (50,40,30):
+            value_lists.append([el for el in range(dim_size)])
+        all_indices = list(itertools.product(*value_lists))
+        #Randomly sample 5% of elements
+        no_elements = int(0.05*50*40*30)
+        # Randomly sample from all_indices
+        sampled_indices = random.sample(all_indices, no_elements)
+        # Generate tensor with all unknown indices set to zero
+        incomplete_tensor = np.zeros(shape=np.shape(overall_tensor))
+        for index in sampled_indices:
+           incomplete_tensor[index] = overall_tensor[index]
+        #Apply tensor completion to incomplete tensor
+        t, f, i = tensorcomplete_CP_WOPT_dense(incomplete_tensor, sampled_indices, 5, stepsize=0.0000001, iteration_limit=100000)
+        difference = np.linalg.norm(np.ndarray.flatten(t - overall_tensor))
+        end_time = time.perf_counter()
+        print('\n----SUBJECTIVE TEST RESULTS for 50x40x30 DENSE RANDOM TENSOR AFTER CONVERGENCE-----')
+        print(f'Norm Difference Between predicted and true: {difference}')
+        print(f'Objective function value: {f}')
+        print(f'Number of iterations: {i}')
+        print(f'Execution time: {end_time - start_time}')
+        
+        
 class TestTensorcomplete_CP_WOPT_sparse(unittest.TestCase):
 
     def test_504030_tensor(self):
