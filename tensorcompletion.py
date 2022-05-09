@@ -66,7 +66,7 @@ def tensorcomplete_CP_WOPT_dense(np_array, known_indices, rank, stepsize=0.01, *
 
 #=================================================================================================
 #CP-WOPT when the tensor is treated as sparse
-def tensorcomplete_CP_WOPT_sparse(np_array, known_indices, rank, stepsize=0.01):
+def tensorcomplete_CP_WOPT_sparse(np_array, known_indices, rank, stepsize=0.01, **kwargs):
     #INITIALISATION-----------------------
     #Generate tensor from provided numpy array
     tensor = tl.tensor(np_array)
@@ -86,26 +86,29 @@ def tensorcomplete_CP_WOPT_sparse(np_array, known_indices, rank, stepsize=0.01):
         CPD_factors.append(factor_matrix_estimate)
     
     #ITERATIONS----------------------------
-    def stop_condition(prev_F, curr_F, tol=1e-8):
+    #Used to set an iteration limit
+    iteration_condition = lambda i: False
+    if 'iteration_limit' in kwargs.keys():
+        iteration_condition = lambda i: i >= kwargs['iteration_limit']
+    #The condition for convergence 
+    def convergence_condition(prev_F, curr_F, tol=1e-8):
         return abs(prev_F - curr_F)/(prev_F+tol) < tol
     iterations = 0
     #Used to hold previous and current values of objective function
     previous_fval = 1
     current_fval = 0
-    while not stop_condition(previous_fval, current_fval):
-        #Obtain vector z from original paper (changes across iterations)
-        z = np.zeros(shape=(no_known_indices,))
-        for q in range(no_known_indices):
-            for r in range(rank):
-                #Take product across factor matrices
-                element_product = 1
-                for n in range(Ndims):
-                    factor_matrix = CPD_factors[n]
+    while (not iteration_condition(iterations)) and (not convergence_condition(previous_fval, current_fval)):
+        #Obtain v vectors for all ranks and known indices
+        v_vectors = np.zeros(shape=(rank, Ndims, no_known_indices))
+        for r in range(rank):                 
+            for n in range(Ndims):
+                factor_matrix = CPD_factors[n]
+                for q in range(no_known_indices):
                     index = known_indices[q]
-                    element = factor_matrix[index[n], r]
-                    element_product *= element
-                #Add products for each column of factor matrices
-                z[q] += element_product
+                    v_vectors[r,n,q] = factor_matrix[index[n], r]
+        #Obtain vector z from original paper (changes across iterations)
+        hadamard_prods = np.multiply.reduce(v_vectors, axis=1, keepdims=True)
+        z = np.reshape(np.add.reduce(hadamard_prods, axis=0), newshape=(no_known_indices,))
         #Obtain squared norm of vector z
         z_sq_norm = np.inner(z,z)
         #Obtain function value
@@ -118,27 +121,18 @@ def tensorcomplete_CP_WOPT_sparse(np_array, known_indices, rank, stepsize=0.01):
         for mode in range(Ndims):
             mode_size = tensor_shape[mode]
             gradient_matrix = np.zeros(shape=(mode_size, rank))
+            #leave one out continued vector Hadamard products for all ranks
+            u_products_1 = np.multiply.reduce(v_vectors[:,0:mode,:], axis=1, keepdims=True)
+            u_products_2 = np.multiply.reduce(v_vectors[:,mode+1:,:], axis=1, keepdims=True)
+            u_products = np.multiply(u_products_1, u_products_2) 
             #For each of the r columns
             for r in range(rank):
                 #u is as described in the paper - it holds the continued products
-                u = t
-                # For each of the factor matrices
-                for n in range(Ndims):
-                    if n == mode:
-                        continue
-                    #Find vector v as described in the paper 
-                    factor_matrix = CPD_factors[n]
-                    v = np.zeros(shape=(no_known_indices,))
-                    for q in range(no_known_indices):
-                        index = known_indices[q]
-                        v[q] = factor_matrix[index[n], r]
-                    u = np.multiply(u, v)
+                u = np.multiply(t, u_products[r,0])
                 #Find r^th column of mode^th gradient matrix
                 for j in range(mode_size):
-                    for q in range(no_known_indices):
-                        index = known_indices[q]
-                        if j == index[mode]:
-                            gradient_matrix[j, r] += u[q]        
+                    where_array = [j == known_indices[q][mode] for q in range(no_known_indices)]
+                    gradient_matrix[j, r] = np.add.reduce(u, axis=0, where=where_array)        
             #Use gradient matrix to update factor matrix
             CPD_factors[mode] = CPD_factors[mode] + stepsize*gradient_matrix       
         iterations+=1
