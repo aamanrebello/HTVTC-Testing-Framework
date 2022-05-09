@@ -195,3 +195,75 @@ def tensorcomplete_TKD_Geng_Miles(np_array, known_indices, rank_list, hooi_toler
     converged = convergence_condition(current_fval, objective_tolerance)
     return prediction_tensor, current_fval, iterations, converged
 #=============================================================================================
+
+
+#=============================================================================================
+def tensorcomplete_TKD_Gradient(np_array, known_indices, rank_list, stepsize=0.01, convergence_tolerance=1e-8, **kwargs):
+    #INITIALISATION-----------------------
+    #Generate tensor from provided numpy array
+    tensor = tl.tensor(np_array)
+    #Obtain weighting tensor
+    weighting_tensor = np.zeros(shape=np.shape(np_array))
+    for index in known_indices:
+        weighting_tensor[index] = 1
+    #Obtain tensor Y from original paper (constant across iterations)
+    tensor_Y = np.multiply(weighting_tensor, np_array)
+    #Obtain squared norm of tensor Y
+    Y_sq_norm = tl.tenalg.inner(tensor_Y, tensor_Y)
+    #Initialise factor matrices as left singular vectors of n-mode flattening and find core tensor through mode-n product with transpose
+    #Essentially we are doing HOSVD.
+    TKD_factors = []
+    TKD_core = tl.copy(tensor)
+    Ndims = len(np.shape(np_array))
+    for mode in range(Ndims):
+        unfolded_tensor = tl.unfold(tensor, mode=mode)
+        u,_,_ = np.linalg.svd(unfolded_tensor, full_matrices=False)
+        rank = rank_list[mode]
+        factor_matrix_estimate = u[:,0:rank]
+        TKD_factors.append(factor_matrix_estimate)
+        TKD_core = tl.tenalg.mode_dot(TKD_core, factor_matrix_estimate.T, mode=mode)
+    TKD_estimate = (TKD_core, TKD_factors)
+        
+    #ITERATIONS----------------------------
+    #Used to set an iteration limit
+    iteration_condition = lambda i: False
+    if 'iteration_limit' in kwargs.keys():
+        iteration_condition = lambda i: i >= kwargs['iteration_limit']
+    #The condition for convergence
+    def convergence_condition(prev_F, curr_F, tol):
+        return abs(prev_F - curr_F)/(prev_F+tol) < tol
+    predicted_tensor = None
+    iterations = 0
+    #Used to hold previous and current values of objective function
+    previous_fval = 1
+    current_fval = 0
+    while (not iteration_condition(iterations)) and (not convergence_condition(previous_fval, current_fval, convergence_tolerance)):
+        #Obtain tensor Z from original paper (changes across iterations)
+        predicted_tensor = tl.tucker_tensor.tucker_to_tensor(TKD_estimate)
+        tensor_Z = tl.tensor(np.multiply(weighting_tensor, predicted_tensor))
+        #Obtain squared norm of tensor Z
+        Z_sq_norm = tl.tenalg.inner(tensor_Z, tensor_Z)
+        #Obtain function value
+        previous_fval = current_fval
+        current_fval = 0.5*Y_sq_norm + 0.5*Z_sq_norm - tl.tenalg.inner(tensor_Y, tensor_Z)
+        #Difference between tensors Y and Z
+        tensor_T = tensor_Y - tensor_Z
+        #Gradient update of each factor matrix wrt objective function.
+        for mode in range(Ndims):
+            leave_one_out_factors = TKD_factors[0:mode] + TKD_factors[mode+1:]
+            continued_product = tl.tenalg.kronecker(leave_one_out_factors)
+            gradient_intermediate = -np.matmul(tl.unfold(tensor_T, mode=mode), continued_product)
+            gradient = np.matmul(gradient_intermediate, tl.unfold(TKD_core, mode=mode).T)
+            TKD_factors[mode] = TKD_factors[mode] - stepsize*gradient
+        #Gradient update of core tensor with respect to objective function
+        factors_outer_product = tl.tenalg.outer(TKD_factors)
+        #Reorder dimensions so that the first Ndims dimensions can be flattened into one
+        new_axes_order = [2*i for i in range(Ndims)] + [2*i+1 for i in range(Ndims)]
+        reordered_axes = np.transpose(factors_outer_product, axes=new_axes_order)
+        partially_flattened = reordered_axes.reshape(-1, *reordered_axes.shape[-Ndims:])
+        flattened_T = tensor_T.flatten()
+        gradient = tl.tenalg.mode_dot(partially_flattened, flattened_T, mode=0)
+        TKD_core = TKD_core - stepsize*gradient
+        iterations+=1
+    return predicted_tensor, current_fval, iterations
+#=============================================================================================
