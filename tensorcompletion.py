@@ -151,7 +151,7 @@ def tensorcomplete_CP_WOPT_sparse(np_array, known_indices, rank, stepsize=0.01):
 
 
 #=============================================================================================
-def tensorcomplete_TKD_Geng_Miles(np_array, known_indices, rank_list, hooi_tolerance, objective_tolerance=1e-8):
+def tensorcomplete_TKD_Geng_Miles(np_array, known_indices, rank_list, hooi_tolerance, objective_tolerance=1e-8, **kwargs):
     #Generate tensor with unknown elements initialised to mean of known elements
     #Find elements corresponding to known indices and take their mean
     known_values = [np_array[index] for index in known_indices]
@@ -169,6 +169,11 @@ def tensorcomplete_TKD_Geng_Miles(np_array, known_indices, rank_list, hooi_toler
     core, factors = tl.decomposition.tucker(tensor=target_tensor, rank=rank_list, tol=hooi_tolerance)
     prediction_tensor = tl.tucker_tensor.tucker_to_tensor((core,factors))
 
+    #Used to set an iteration limit
+    iteration_condition = lambda i: False
+    if 'iteration_limit' in kwargs.keys():
+        iteration_condition = lambda i: i >= kwargs['iteration_limit']
+    #The condition for convergence
     def convergence_condition(current_fval, tol):
         return current_fval < tol
 
@@ -176,9 +181,8 @@ def tensorcomplete_TKD_Geng_Miles(np_array, known_indices, rank_list, hooi_toler
     prev_fval = 1
     current_fval = 1
     #Returned as readings
-    converged = True
     iterations = 0
-    while not convergence_condition(current_fval, objective_tolerance):
+    while (not iteration_condition(iterations)) and (not convergence_condition(current_fval, objective_tolerance)):
         #Update target tensor according to values in predicted tensor corresponding to unknown values
         target_tensor = tl.copy(prediction_tensor)
         for i in range(no_known_values):
@@ -191,9 +195,9 @@ def tensorcomplete_TKD_Geng_Miles(np_array, known_indices, rank_list, hooi_toler
         current_fval = tl.norm(prediction_tensor - target_tensor)
         #Break in case of no decrease in fvalue (could be due to incorrect rank, too few elements)
         if iterations > 0 and current_fval > prev_fval:
-            converged=False
             break
         iterations += 1
-
+        
+    converged = convergence_condition(current_fval, objective_tolerance)
     return prediction_tensor, current_fval, iterations, converged
 #=============================================================================================
