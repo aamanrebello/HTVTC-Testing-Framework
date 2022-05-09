@@ -4,7 +4,7 @@ from tensorly.decomposition import parafac
 
 #=================================================================================
 #CP-WOPT when the tensor is treated as dense
-def tensorcomplete_CP_WOPT_dense(np_array, known_indices, rank, stepsize=0.01):
+def tensorcomplete_CP_WOPT_dense(np_array, known_indices, rank, stepsize=0.01, **kwargs):
     #INITIALISATION-----------------------
     #Generate tensor from provided numpy array
     tensor = tl.tensor(np_array)
@@ -29,14 +29,20 @@ def tensorcomplete_CP_WOPT_dense(np_array, known_indices, rank, stepsize=0.01):
     CPD_estimate = (CPD_weights, CPD_factors)
         
     #ITERATIONS----------------------------
-    def stop_condition(prev_F, curr_F, tol=1e-8):
+    #Used to set an iteration limit
+    iteration_condition = lambda i: False
+    if 'iteration_limit' in kwargs.keys():
+        iteration_condition = lambda i: i >= kwargs['iteration_limit']
+    #The condition for convergence 
+    def convergence_condition(prev_F, curr_F, tol=1e-8):
         return abs(prev_F - curr_F)/(prev_F+tol) < tol
+    
     predicted_tensor = None
     iterations = 0
     #Used to hold previous and current values of objective function
     previous_fval = 1
     current_fval = 0
-    while not stop_condition(previous_fval, current_fval):
+    while (not iteration_condition(iterations)) and (not convergence_condition(previous_fval, current_fval)):
         #Obtain tensor Z from original paper (changes across iterations)
         predicted_tensor = tl.cp_to_tensor(CPD_estimate)
         tensor_Z = tl.tensor(np.multiply(weighting_tensor, predicted_tensor))
