@@ -267,3 +267,79 @@ def tensorcomplete_TKD_Gradient(np_array, known_indices, rank_list, stepsize=0.0
         iterations+=1
     return predicted_tensor, current_fval, iterations
 #=============================================================================================
+
+
+#=============================================================================================
+def tensorcomplete_TMac_TT(np_array, known_indices, rank_list, convergence_tolerance=1e-8, **kwargs):
+    #INITIALISATION-----------------------
+    #Generate the alpha weights by generating the delta values. In the same loop, generate initial U and V matrices.
+    dimension_tuple = np.shape(np_array)
+    dimension_list = list(dimension_tuple)
+    Ndims = len(dimension_list)
+    deltas = [0]*Ndims
+    U_matrices = []
+    V_matrices = []
+    X_unfoldings = []
+    delta_sum = 0
+    for k in range(1, Ndims):
+        array_k = k - 1
+        dim1 = np.multiply.reduce(dimension_list[:array_k+1])
+        dim2 = np.multiply.reduce(dimension_list[array_k+1:])
+        rank = rank_list[array_k]
+        X_k = np.reshape(np_array, newshape=(dim1, dim2))
+        X_unfoldings.append(X_k)
+        U_k, _, V_k = np.linalg.svd(X_k)
+        U_matrices.append(U_k[:, :rank])
+        V_matrices.append(V_k[:rank, :])
+        deltas[array_k] = min(dim1, dim2)
+        delta_sum += deltas[array_k]
+    normalise = lambda a : a/delta_sum
+    alphas = list(map(normalise, deltas))
+    print(alphas)
+    #ITERATIONS----------------------------
+    #Used to set an iteration limit
+    iteration_condition = lambda i: False
+    if 'iteration_limit' in kwargs.keys():
+        iteration_condition = lambda i: i >= kwargs['iteration_limit']
+    #The condition for convergence
+    norm_T = np.linalg.norm(np_array)
+    def convergence_condition(prev_F, curr_F, tol):
+        return abs(prev_F - curr_F)/(norm_T+tol) < tol
+    predicted_tensor = None
+    iterations = 0
+    #Used to hold previous and current values of objective function
+    previous_norm = norm_T
+    current_norm = 0
+    while (not iteration_condition(iterations)) and (not convergence_condition(previous_norm, current_norm, convergence_tolerance)):
+        #Update matricised tensors and matrices
+        predicted_tensor = np.zeros(shape=dimension_tuple)
+        for k in range(1, Ndims):
+            array_k = k - 1
+            #Obtain unfolded tensor X
+            X = X_unfoldings[array_k]
+            #Obtain U and V matrices
+            U = U_matrices[array_k]
+            V = V_matrices[array_k]
+            # First matrix step
+            new_U = np.matmul(X, V.T)
+            #Second matrix step
+            new_V = np.matmul(np.linalg.pinv(new_U), X)
+            #Third matrix step
+            new_X = np.matmul(new_U, new_V)
+            #Fold X
+            folded_X = np.reshape(X, newshape=dimension_tuple)
+            alpha = alphas[array_k] 
+            predicted_tensor += alpha*folded_X
+        print(predicted_tensor)
+        #Set the known elements
+        for index in known_indices:
+            predicted_tensor[index] = np_array[index]
+
+        #Update objective function
+        previous_norm = current_norm
+        current_norm = np.linalg.norm(predicted_tensor)
+        iterations+=1
+
+    objective = abs(current_norm - previous_norm)/norm_T 
+    return predicted_tensor, objective, iterations
+#=============================================================================================
