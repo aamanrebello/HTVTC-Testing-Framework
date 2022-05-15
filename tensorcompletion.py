@@ -269,32 +269,102 @@ def tensorcomplete_TKD_Gradient(np_array, known_indices, rank_list, stepsize=0.0
 
 
 #=============================================================================================
+#Ket augmentation
+def KA(image, child):
+    dim1, dim2, dim3 = image.shape
+    dimn = int(np.log(dim1) / np.log(child) + np.log(dim2) / np.log(child))
+    newdim = []
+    for i in range(dimn):
+        newdim.append(child)
+    newdim.append(dim3)
+    highordertensor = np.zeros(newdim)
+    d = int(child ** 0.5)
+    indmat = np.arange(0, child, 1).reshape([d, d], order = 'F').astype(int)
+    newind = np.zeros((dim1, dim2, dimn)).astype(int)
+    for i in range(dim1):
+        for j in range(dim2):
+            x = i
+            y = j
+            for k in range(dimn):
+                indx = int(x % d)
+                indy = int(y % d)
+                newind[i, j, dimn - k - 1] = indmat[indx, indy]
+                x = x // d
+                y = y // d 
+            indtuple = tuple(map(tuple, newind[i, j, :].reshape(len(newind[0,0,:]),1)))
+            highordertensor[indtuple] = image[i, j, :]
+    return highordertensor, newind
+
+#Reverse ket augmentation
+def xind2mul(vec, child):
+    newvec = np.zeros(len(vec))
+    d = int(child ** 0.5)
+    xind = np.zeros((d, d)).astype(int)
+    for i in range(d):
+        xind[:, i] = i
+    xind = xind.reshape([child])
+    for i in range(len(vec)):
+        newvec[i] = xind[vec[i]]
+    return newvec
+
+def yind2mul(vec, child):
+    newvec = np.zeros(len(vec))
+    d = int(child ** 0.5)
+    xind = np.zeros((d, d)).astype(int)
+    for i in range(d):
+        xind[i, :] = i
+    xind = xind.reshape([child])
+    for i in range(len(vec)):
+        newvec[i] = xind[vec[i]]
+    return newvec
+
+def invKA(tensor, tind):
+    lastdim = tensor.shape[-1]
+    child = tensor.shape[0]
+    dim1, dim2, dimn = tind.shape
+    d = int(child ** 0.5)
+    weightd = np.ones(dimn)
+    for i in range(dimn):
+        weightd[i] = d ** (dimn - 1 - i)
+
+    image = np.zeros((dim1, dim2, lastdim)).astype(int)
+    for i in range(dim1):
+        for j in range(dim2):
+            newind = tind[i, j, :]
+            x = int(np.matmul(xind2mul(newind, child), weightd))
+            y = int(np.matmul(yind2mul(newind, child), weightd))
+            indtuple = tuple(map(tuple, newind.reshape(len(newind),1)))
+            image[x, y, :] = tensor[indtuple]
+    return image
+
+
 def tensorcomplete_TMac_TT(np_array, known_indices, rank_list, convergence_tolerance=1e-8, **kwargs):
     #INITIALISATION-----------------------
     #Generate the alpha weights by generating the delta values. In the same loop, generate initial U and V matrices.
     dimension_tuple = np.shape(np_array)
     dimension_list = list(dimension_tuple)
     Ndims = len(dimension_list)
-    deltas = [0]*Ndims
+    deltas = [0]*(Ndims-1)
     U_matrices = []
     V_matrices = []
     X_unfoldings = []
     delta_sum = 0
+    print('ITERATION 0---------------------------------------------------------------')
     for k in range(1, Ndims):
+        print(f'K {k}---------------------------------------------------------------')
         array_k = k - 1
         dim1 = np.multiply.reduce(dimension_list[:array_k+1])
         dim2 = np.multiply.reduce(dimension_list[array_k+1:])
         rank = rank_list[array_k]
         X_k = np.reshape(np_array, newshape=(dim1, dim2))
         X_unfoldings.append(X_k)
-        U_k, _, V_k = np.linalg.svd(X_k)
-        U_matrices.append(U_k[:, :rank])
-        V_matrices.append(V_k[:rank, :])
+        U_matrices.append(np.random.normal(size=(dim1,rank)))
+        V_matrices.append(np.random.normal(size=(rank,dim2)))
+        print(np.linalg.norm(X_k - (U_matrices[array_k] @ V_matrices[array_k])))
         deltas[array_k] = min(dim1, dim2)
         delta_sum += deltas[array_k]
     normalise = lambda a : a/delta_sum
     alphas = list(map(normalise, deltas))
-    print(alphas)
     #ITERATIONS----------------------------
     #Used to set an iteration limit
     iteration_condition = lambda i: False
@@ -310,6 +380,7 @@ def tensorcomplete_TMac_TT(np_array, known_indices, rank_list, convergence_toler
     previous_norm = norm_T
     current_norm = 0
     while (not iteration_condition(iterations)) and (not convergence_condition(previous_norm, current_norm, convergence_tolerance)):
+        print(f'ITERATION {iterations + 1}---------------------------------------------------------------')
         #Update matricised tensors and matrices
         predicted_tensor = np.zeros(shape=dimension_tuple)
         for k in range(1, Ndims):
@@ -320,16 +391,18 @@ def tensorcomplete_TMac_TT(np_array, known_indices, rank_list, convergence_toler
             U = U_matrices[array_k]
             V = V_matrices[array_k]
             # First matrix step
-            new_U = np.matmul(X, V.T)
+            new_U = X @ V.T
             #Second matrix step
-            new_V = np.matmul(np.linalg.pinv(new_U), X)
+            new_V = np.linalg.pinv((new_U.T @ new_U)) @ new_U.T @ X
             #Third matrix step
-            new_X = np.matmul(new_U, new_V)
+            new_X = new_U @ new_V
+            #Update X unfoldings and U and V matrices
+            U_matrices[array_k] = new_U
+            V_matrices[array_k] = new_V
             #Fold X
-            folded_X = np.reshape(X, newshape=dimension_tuple)
+            folded_X = np.reshape(new_X, newshape=dimension_tuple)
             alpha = alphas[array_k] 
             predicted_tensor += alpha*folded_X
-        print(predicted_tensor)
         #Set the known elements
         for index in known_indices:
             predicted_tensor[index] = np_array[index]
@@ -337,6 +410,17 @@ def tensorcomplete_TMac_TT(np_array, known_indices, rank_list, convergence_toler
         #Update objective function
         previous_norm = current_norm
         current_norm = np.linalg.norm(predicted_tensor)
+
+        #Update X unfolding matrices
+        for k in range(1, Ndims):
+            print(f'K {k}---------------------------------------------------------------')
+            array_k = k - 1
+            dim1 = np.multiply.reduce(dimension_list[:array_k+1])
+            dim2 = np.multiply.reduce(dimension_list[array_k+1:])
+            X_k = np.reshape(predicted_tensor, newshape=(dim1, dim2))
+            X_unfoldings.append(X_k)
+            print(np.linalg.norm(X_k - (U_matrices[array_k] @ V_matrices[array_k])))
+        
         iterations+=1
 
     objective = abs(current_norm - previous_norm)/norm_T 
