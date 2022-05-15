@@ -269,17 +269,14 @@ def tensorcomplete_TKD_Gradient(np_array, known_indices, rank_list, stepsize=0.0
 
 
 #=============================================================================================
-#Ket augmentation folds first 2 dimensions of tensor into higher order
+#Ket augmentation
 def KA(image, child):
-    shape = image.shape
-    dim1 = shape[0]
-    dim2 = shape[1]
+    dim1, dim2, dim3 = image.shape
     dimn = int(np.log(dim1) / np.log(child) + np.log(dim2) / np.log(child))
     newdim = []
     for i in range(dimn):
         newdim.append(child)
-    for dim in shape[2:]:
-      newdim.append(dim)
+    newdim.append(dim3)
     highordertensor = np.zeros(newdim)
     d = int(child ** 0.5)
     indmat = np.arange(0, child, 1).reshape([d, d], order = 'F').astype(int)
@@ -295,10 +292,10 @@ def KA(image, child):
                 x = x // d
                 y = y // d 
             indtuple = tuple(map(tuple, newind[i, j, :].reshape(len(newind[0,0,:]),1)))
-            highordertensor[indtuple] = image[i, j]
+            highordertensor[indtuple] = image[i, j, :]
     return highordertensor, newind
 
-#Reverse ket augmentation unfolds first two dimensions into lower order
+#Reverse ket augmentation
 def xind2mul(vec, child):
     newvec = np.zeros(len(vec))
     d = int(child ** 0.5)
@@ -322,23 +319,24 @@ def yind2mul(vec, child):
     return newvec
 
 def invKA(tensor, tind):
+    lastdim = tensor.shape[-1]
     child = tensor.shape[0]
     dim1, dim2, dimn = tind.shape
-    lastdims = tensor.shape[dimn:]
     d = int(child ** 0.5)
     weightd = np.ones(dimn)
     for i in range(dimn):
         weightd[i] = d ** (dimn - 1 - i)
 
-    image = np.zeros((dim1, dim2, *lastdims)).astype(int)
+    image = np.zeros((dim1, dim2, lastdim)).astype(int)
     for i in range(dim1):
         for j in range(dim2):
             newind = tind[i, j, :]
             x = int(np.matmul(xind2mul(newind, child), weightd))
             y = int(np.matmul(yind2mul(newind, child), weightd))
             indtuple = tuple(map(tuple, newind.reshape(len(newind),1)))
-            image[x, y] = tensor[indtuple]
+            image[x, y, :] = tensor[indtuple]
     return image
+
 
 def tensorcomplete_TMac_TT(np_array, known_indices, rank_list, convergence_tolerance=1e-8, **kwargs):
     #INITIALISATION-----------------------
