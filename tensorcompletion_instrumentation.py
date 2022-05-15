@@ -47,7 +47,7 @@ class TestTensorcomplete_CP_WOPT_dense(unittest.TestCase):
         print(f'Objective function value: {f}')
         print(f'Number of iterations: {i}')
         print(f'Execution time: {end_time - start_time}')
-    @unittest.skip('')
+    
     def test_30303030_CPD_tensor(self):
         #Generate random vectors whose outer producs generate the rank-1 components
         start_time = time.perf_counter()
@@ -82,7 +82,7 @@ class TestTensorcomplete_CP_WOPT_dense(unittest.TestCase):
         for index in sampled_indices:
            incomplete_tensor[index] = overall_tensor[index]
         #Apply tensor completion to incomplete tensor
-        t, f, i = tensorcomplete_CP_WOPT_dense(incomplete_tensor, sampled_indices, 3, stepsize=0.000000001, convergence_tolerance=1e-13, iterations_limit=100000)
+        t, f, i = tensorcomplete_CP_WOPT_dense(incomplete_tensor, sampled_indices, 3, stepsize=0.000000003, convergence_tolerance=1e-13, iteration_limit=15000)
         difference = np.linalg.norm(np.ndarray.flatten(t - overall_tensor))
         end_time = time.perf_counter()
         print('\n----SUBJECTIVE TEST RESULTS for 30x30x30x30 DENSE CPD CONSTRUCT AFTER CONVERGENCE-----')
@@ -90,7 +90,7 @@ class TestTensorcomplete_CP_WOPT_dense(unittest.TestCase):
         print(f'Objective function value: {f}')
         print(f'Number of iterations: {i}')
         print(f'Execution time: {end_time - start_time}')
-    
+    @unittest.skip('')
     def test_504030_TKD_tensor(self):
         #Generate random factor matrices and core tensor
         start_time = time.perf_counter()
@@ -116,7 +116,7 @@ class TestTensorcomplete_CP_WOPT_dense(unittest.TestCase):
         for index in sampled_indices:
            incomplete_tensor[index] = overall_tensor[index]
         #Apply tensor completion to incomplete tensor
-        t, f, i = tensorcomplete_CP_WOPT_dense(incomplete_tensor, sampled_indices, 5, stepsize=0.00000001, convergence_tolerance=1e-13, iterations_limit=100000)
+        t, f, i = tensorcomplete_CP_WOPT_dense(incomplete_tensor, sampled_indices, 5, stepsize=0.00000001, convergence_tolerance=1e-13, iteration_limit=100000)
         difference = np.linalg.norm(np.ndarray.flatten(t - overall_tensor))
         end_time = time.perf_counter()
         print('\n----SUBJECTIVE TEST RESULTS for 350x40x30 DENSE TKD CONSTRUCT AFTER CONVERGENCE-----')
@@ -253,7 +253,7 @@ class TestTensorcomplete_TKD_Geng_Miles(unittest.TestCase):
             value_lists.append([el for el in range(dim_size)])
         all_indices = list(itertools.product(*value_lists))
         #Randomly sample 5% of elements
-        no_elements = int(0.5*30*30*30*30)
+        no_elements = int(0.05*30*30*30*30)
         # Randomly sample from all_indices
         sampled_indices = random.sample(all_indices, no_elements)
         # Generate tensor with all unknown indices set to zero
@@ -261,7 +261,7 @@ class TestTensorcomplete_TKD_Geng_Miles(unittest.TestCase):
         for index in sampled_indices:
            incomplete_tensor[index] = overall_tensor[index]
         #Apply tensor completion to incomplete tensor
-        t, f, i, c = tensorcomplete_TKD_Geng_Miles(incomplete_tensor, sampled_indices, [3,4,2,5], hooi_tolerance=1e-3, iterations_limit=10000)
+        t, f, i, c = tensorcomplete_TKD_Geng_Miles(incomplete_tensor, sampled_indices, [3,4,2,5], hooi_tolerance=1e-3, iteration_limit=10000)
         difference = np.linalg.norm(np.ndarray.flatten(t - overall_tensor))
         end_time = time.perf_counter()
         print('\n----SUBJECTIVE TEST RESULTS for 30x30x30x30 TKD Geng Miles (TKD Tensor) AFTER CONVERGENCE-----')
@@ -294,7 +294,7 @@ class TestTensorcomplete_TKD_Geng_Miles(unittest.TestCase):
             value_lists.append([el for el in range(dim_size)])
         all_indices = list(itertools.product(*value_lists))
         #Randomly sample 5% of elements
-        no_elements = int(0.5*50*40*30)
+        no_elements = int(0.05*50*40*30)
         # Randomly sample from all_indices
         sampled_indices = random.sample(all_indices, no_elements)
         # Generate tensor with all unknown indices set to zero
@@ -302,7 +302,7 @@ class TestTensorcomplete_TKD_Geng_Miles(unittest.TestCase):
         for index in sampled_indices:
            incomplete_tensor[index] = overall_tensor[index]
         #Apply tensor completion to incomplete tensor
-        t, f, i, c = tensorcomplete_TKD_Geng_Miles(incomplete_tensor, sampled_indices, [3,3,3], hooi_tolerance=1e-3, iterations_limit=10000)
+        t, f, i, c = tensorcomplete_TKD_Geng_Miles(incomplete_tensor, sampled_indices, [3,3,3], hooi_tolerance=1e-3, iteration_limit=10000)
         difference = np.linalg.norm(np.ndarray.flatten(t - overall_tensor))
         end_time = time.perf_counter()
         print('\n----SUBJECTIVE TEST RESULTS for 50x40x30 TKD Geng Miles (CPD Tensor) AFTER CONVERGENCE-----')
@@ -323,7 +323,7 @@ class TestTensorcomplete_TKD_Geng_Miles(unittest.TestCase):
             value_lists.append([el for el in range(dim_size)])
         all_indices = list(itertools.product(*value_lists))
         #Randomly sample 5% of elements
-        no_elements = int(0.5*50*40*30)
+        no_elements = int(0.05*50*40*30)
         # Randomly sample from all_indices
         sampled_indices = random.sample(all_indices, no_elements)
         # Generate tensor with all unknown indices set to zero
