@@ -1,6 +1,5 @@
 import tensorly as tl
 import numpy as np
-from tensorly.decomposition import parafac
 
 #=================================================================================
 #CP-WOPT when the tensor is treated as dense
