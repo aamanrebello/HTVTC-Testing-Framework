@@ -1,3 +1,4 @@
+from tensorly.decomposition import tucker
 import tensorly as tl
 import numpy as np
 
@@ -65,7 +66,7 @@ def tensorcomplete_CP_WOPT_dense(np_array, known_indices, rank, stepsize=0.01, c
 
 #=================================================================================================
 #CP-WOPT when the tensor is treated as sparse
-def tensorcomplete_CP_WOPT_sparse(np_array, known_indices, rank, stepsize=0.01, **kwargs):
+def tensorcomplete_CP_WOPT_sparse(np_array, known_indices, rank, stepsize=0.01, convergence_tolerance=1e-8, **kwargs):
     #INITIALISATION-----------------------
     #Generate tensor from provided numpy array
     tensor = tl.tensor(np_array)
@@ -90,13 +91,13 @@ def tensorcomplete_CP_WOPT_sparse(np_array, known_indices, rank, stepsize=0.01, 
     if 'iteration_limit' in kwargs.keys():
         iteration_condition = lambda i: i >= kwargs['iteration_limit']
     #The condition for convergence 
-    def convergence_condition(prev_F, curr_F, tol=1e-8):
+    def convergence_condition(prev_F, curr_F, tol):
         return abs(prev_F - curr_F)/(prev_F+tol) < tol
     iterations = 0
     #Used to hold previous and current values of objective function
     previous_fval = 1
     current_fval = 0
-    while (not iteration_condition(iterations)) and (not convergence_condition(previous_fval, current_fval)):
+    while (not iteration_condition(iterations)) and (not convergence_condition(previous_fval, current_fval, convergence_tolerance)):
         #Obtain v vectors for all ranks and known indices
         v_vectors = np.zeros(shape=(rank, Ndims, no_known_indices))
         for r in range(rank):                 
@@ -159,7 +160,7 @@ def tensorcomplete_TKD_Geng_Miles(np_array, known_indices, rank_list, hooi_toler
     #Generate tensor from initialisation
     target_tensor = tl.tensor(initialisation)
     #Perform initial HOOI to obtain core and factor matrices that form the initial prediction tensor
-    core, factors = tl.decomposition.tucker(tensor=target_tensor, rank=rank_list, tol=hooi_tolerance)
+    core, factors = tucker(tensor=target_tensor, rank=rank_list, tol=hooi_tolerance)
     prediction_tensor = tl.tucker_tensor.tucker_to_tensor((core,factors))
 
     #Used to set an iteration limit
@@ -181,7 +182,7 @@ def tensorcomplete_TKD_Geng_Miles(np_array, known_indices, rank_list, hooi_toler
         for i in range(no_known_values):
             index = known_indices[i]
             target_tensor[index] = known_values[i]
-        core, factors = tl.decomposition.tucker(tensor=target_tensor, rank=rank_list, tol=hooi_tolerance)
+        core, factors = tucker(tensor=target_tensor, rank=rank_list, tol=hooi_tolerance)
         prediction_tensor = tl.tucker_tensor.tucker_to_tensor((core,factors))
         #Update function values
         prev_fval = current_fval
