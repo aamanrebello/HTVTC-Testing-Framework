@@ -195,10 +195,54 @@ class TestTensorcomplete_CP_WOPT_sparse(unittest.TestCase):
         print(f'Objective function value: {f}')
         print(f'Number of iterations: {i}')
         print(f'Execution time: {end_time - start_time}')
+
+
+    def test_30303030_tensor(self):
+        #Generate random vectors whose outer producs generate the rank-1 components
+        start_time = time.perf_counter()
+        scaling = 5
+        a1 = scaling*np.random.normal(size=(30,))
+        b1 = scaling*np.random.normal(size=(30,))
+        c1 = scaling*np.random.normal(size=(30,))
+        d1 = scaling*np.random.normal(size=(30,))
+        a2 = scaling*np.random.normal(size=(30,))
+        b2 = scaling*np.random.normal(size=(30,))
+        c2 = scaling*np.random.normal(size=(30,))
+        d2 = scaling*np.random.normal(size=(30,))
+        a3 = scaling*np.random.normal(size=(30,))
+        b3 = scaling*np.random.normal(size=(30,))
+        c3 = scaling*np.random.normal(size=(30,))
+        d3 = scaling*np.random.normal(size=(30,))
+        t1 = tl.tenalg.outer([a1, b1, c1, d1])
+        t2 = tl.tenalg.outer([a2, b2, c2, d2])
+        t3 = tl.tenalg.outer([a3, b3, c3, d3])
+        overall_tensor = t1 + t2 + t3
+        #Generate all possible combinations of indices
+        value_lists = []
+        for dim_size in (30,30,30,30):
+            value_lists.append([el for el in range(dim_size)])
+        all_indices = list(itertools.product(*value_lists))
+        #Randomly sample 5% of elements
+        no_elements = int(0.05*30*30*30*30)
+        # Randomly sample from all_indices
+        sampled_indices = random.sample(all_indices, no_elements)
+        # Generate tensor with all unknown indices set to zero
+        incomplete_tensor = np.zeros(shape=np.shape(overall_tensor))
+        for index in sampled_indices:
+           incomplete_tensor[index] = overall_tensor[index]
+        #Apply tensor completion to incomplete tensor
+        t, f, i = tensorcomplete_CP_WOPT_sparse(incomplete_tensor, sampled_indices, 3, stepsize=0.0000001, convergence_tolerance=1e-13, iteration_limit=140)
+        difference = np.linalg.norm(np.ndarray.flatten(t - overall_tensor))
+        end_time = time.perf_counter()
+        print('\n----SUBJECTIVE TEST RESULTS for 30x30x30x30 SPARSE AFTER CONVERGENCE-----')
+        print(f'Norm Difference Between predicted and true: {difference}')
+        print(f'Objective function value: {f}')
+        print(f'Number of iterations: {i}')
+        print(f'Execution time: {end_time - start_time}')
         
-@unittest.skip('')       
+      
 class TestTensorcomplete_TKD_Geng_Miles(unittest.TestCase):
-    
+    @unittest.skip('')
     def test_504030_TKD_tensor(self):
         #Generate random factor matrices and core tensor
         start_time = time.perf_counter()
@@ -233,7 +277,7 @@ class TestTensorcomplete_TKD_Geng_Miles(unittest.TestCase):
         print(f'Number of iterations: {i}')
         print(f'Converged?: {c}')
         print(f'Execution time: {end_time - start_time}')
-        
+    @unittest.skip('') 
     def test_30303030_TKD_tensor(self):
         #Generate random factor matrices and core tensor
         start_time = time.perf_counter()
@@ -269,7 +313,7 @@ class TestTensorcomplete_TKD_Geng_Miles(unittest.TestCase):
         print(f'Number of iterations: {i}')
         print(f'Converged?: {c}')
         print(f'Execution time: {end_time - start_time}')
-
+    @unittest.skip('') 
     def test_504030_CPD_tensor(self):
         #Generate random vectors whose outer producs generate the rank-1 components
         start_time = time.perf_counter()
@@ -310,7 +354,7 @@ class TestTensorcomplete_TKD_Geng_Miles(unittest.TestCase):
         print(f'Number of iterations: {i}')
         print(f'Converged?: {c}')
         print(f'Execution time: {end_time - start_time}')
-        
+    @unittest.skip('')    
     def test_504030_random_tensor(self):
         #Generate random vectors whose outer producs generate the rank-1 components
         start_time = time.perf_counter()
@@ -376,7 +420,7 @@ class TestTensorcomplete_TKD_Gradient(unittest.TestCase):
         print(f'Objective function value: {f}')
         print(f'Number of iterations: {i}')
         print(f'Execution time: {end_time - start_time}')
-
+    
     #Takes up too much memory on my PC due to gradient calculation of core tensor taking too much space (6D tensor)
     def test_30303030_TKD_tensor(self):
         #Generate random factor matrices and core tensor
