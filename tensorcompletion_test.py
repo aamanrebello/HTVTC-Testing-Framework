@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 import tensorly as tl
 from tensorcompletion import tensorcomplete_CP_WOPT_dense, tensorcomplete_CP_WOPT_sparse, tensorcomplete_TKD_Geng_Miles, tensorcomplete_TKD_Gradient, tensorcomplete_TMac_TT
-from tensorcompletion import ket_augmentation, inverse_ket_augmentation
+
 
 class TestTensorcomplete_CP_WOPT_dense(unittest.TestCase):
 
@@ -621,14 +621,7 @@ class TestTensorcomplete_TMac_TT(unittest.TestCase):
                          [ 15.,  18.]]])
         #Interchange axes for ket augmentation and update known indices
         t, f, i = tensorcomplete_TMac_TT(arr, known_indices, [1,1,1])
-        comparison = np.isclose(t, ans, atol=0.5)
-        #First check known elements are equal
-        for index in known_indices:
-            self.assertTrue(comparison[index])
-            comparison[index] = False
-        #Check that all the elements are of the same sign
-        signarray = np.multiply(t, ans) >= 0
-        self.assertTrue(signarray.all())
+        self.assertTrue(np.isclose(ans, t, atol=1e-3).all())
     
     def test_4D_tensor(self):
         arr = np.array([[[[  0,   0],
