@@ -4,10 +4,12 @@ import tensorly as tl
 import itertools
 import random
 import time
-from tensorcompletion import tensorcomplete_CP_WOPT_dense, tensorcomplete_CP_WOPT_sparse, tensorcomplete_TKD_Geng_Miles, tensorcomplete_TKD_Gradient
+from tensorcompletion import tensorcomplete_CP_WOPT_dense, tensorcomplete_CP_WOPT_sparse, tensorcomplete_TKD_Geng_Miles, tensorcomplete_TKD_Gradient, tensorcomplete_TMac_TT
+from tensorcompletion import ket_augmentation, inverse_ket_augmentation
 
+@unittest.skip('')
 class TestTensorcomplete_CP_WOPT_dense(unittest.TestCase):
-    @unittest.skip('')
+    
     def test_504030_CPD_tensor(self):
         #Generate random vectors whose outer producs generate the rank-1 components
         start_time = time.perf_counter()
@@ -47,7 +49,7 @@ class TestTensorcomplete_CP_WOPT_dense(unittest.TestCase):
         print(f'Objective function value: {f}')
         print(f'Number of iterations: {i}')
         print(f'Execution time: {end_time - start_time}')
-    @unittest.skip('')
+    
     def test_30303030_CPD_tensor(self):
         #Generate random vectors whose outer producs generate the rank-1 components
         start_time = time.perf_counter()
@@ -90,7 +92,7 @@ class TestTensorcomplete_CP_WOPT_dense(unittest.TestCase):
         print(f'Objective function value: {f}')
         print(f'Number of iterations: {i}')
         print(f'Execution time: {end_time - start_time}')
-    @unittest.skip('')
+    
     def test_504030_TKD_tensor(self):
         #Generate random factor matrices and core tensor
         start_time = time.perf_counter()
@@ -125,7 +127,6 @@ class TestTensorcomplete_CP_WOPT_dense(unittest.TestCase):
         print(f'Number of iterations: {i}')
         print(f'Execution time: {end_time - start_time}')
         
-    @unittest.skip('')
     def test_504030_random_tensor(self):
         #Generate random vectors whose outer producs generate the rank-1 components
         start_time = time.perf_counter()
@@ -153,9 +154,10 @@ class TestTensorcomplete_CP_WOPT_dense(unittest.TestCase):
         print(f'Objective function value: {f}')
         print(f'Number of iterations: {i}')
         print(f'Execution time: {end_time - start_time}')
-            
+
+@unittest.skip('')            
 class TestTensorcomplete_CP_WOPT_sparse(unittest.TestCase):
-    @unittest.skip('')
+    
     def test_504030_tensor(self):
         #Generate random vectors whose outer producs generate the rank-1 components
         start_time = time.perf_counter()
@@ -179,7 +181,7 @@ class TestTensorcomplete_CP_WOPT_sparse(unittest.TestCase):
             value_lists.append([el for el in range(dim_size)])
         all_indices = list(itertools.product(*value_lists))
         #Randomly sample 5% of elements
-        no_elements = int(0.5*50*40*30)
+        no_elements = int(0.05*50*40*30)
         # Randomly sample from all_indices
         sampled_indices = random.sample(all_indices, no_elements)
         # Generate tensor with all unknown indices set to zero
@@ -195,7 +197,6 @@ class TestTensorcomplete_CP_WOPT_sparse(unittest.TestCase):
         print(f'Objective function value: {f}')
         print(f'Number of iterations: {i}')
         print(f'Execution time: {end_time - start_time}')
-
 
     def test_30303030_tensor(self):
         #Generate random vectors whose outer producs generate the rank-1 components
@@ -231,7 +232,7 @@ class TestTensorcomplete_CP_WOPT_sparse(unittest.TestCase):
         for index in sampled_indices:
            incomplete_tensor[index] = overall_tensor[index]
         #Apply tensor completion to incomplete tensor
-        t, f, i = tensorcomplete_CP_WOPT_sparse(incomplete_tensor, sampled_indices, 3, stepsize=0.0000001, convergence_tolerance=1e-13, iteration_limit=140)
+        t, f, i = tensorcomplete_CP_WOPT_sparse(incomplete_tensor, sampled_indices, 3, stepsize=0.00000005, convergence_tolerance=1e-13, iteration_limit=15)
         difference = np.linalg.norm(np.ndarray.flatten(t - overall_tensor))
         end_time = time.perf_counter()
         print('\n----SUBJECTIVE TEST RESULTS for 30x30x30x30 SPARSE AFTER CONVERGENCE-----')
@@ -240,9 +241,9 @@ class TestTensorcomplete_CP_WOPT_sparse(unittest.TestCase):
         print(f'Number of iterations: {i}')
         print(f'Execution time: {end_time - start_time}')
         
-      
+@unittest.skip('')      
 class TestTensorcomplete_TKD_Geng_Miles(unittest.TestCase):
-    @unittest.skip('')
+    
     def test_504030_TKD_tensor(self):
         #Generate random factor matrices and core tensor
         start_time = time.perf_counter()
@@ -277,7 +278,7 @@ class TestTensorcomplete_TKD_Geng_Miles(unittest.TestCase):
         print(f'Number of iterations: {i}')
         print(f'Converged?: {c}')
         print(f'Execution time: {end_time - start_time}')
-    @unittest.skip('') 
+     
     def test_30303030_TKD_tensor(self):
         #Generate random factor matrices and core tensor
         start_time = time.perf_counter()
@@ -313,7 +314,7 @@ class TestTensorcomplete_TKD_Geng_Miles(unittest.TestCase):
         print(f'Number of iterations: {i}')
         print(f'Converged?: {c}')
         print(f'Execution time: {end_time - start_time}')
-    @unittest.skip('') 
+     
     def test_504030_CPD_tensor(self):
         #Generate random vectors whose outer producs generate the rank-1 components
         start_time = time.perf_counter()
@@ -354,7 +355,7 @@ class TestTensorcomplete_TKD_Geng_Miles(unittest.TestCase):
         print(f'Number of iterations: {i}')
         print(f'Converged?: {c}')
         print(f'Execution time: {end_time - start_time}')
-    @unittest.skip('')    
+      
     def test_504030_random_tensor(self):
         #Generate random vectors whose outer producs generate the rank-1 components
         start_time = time.perf_counter()
@@ -455,7 +456,71 @@ class TestTensorcomplete_TKD_Gradient(unittest.TestCase):
         print(f'Norm Difference Between predicted and true: {difference}')
         print(f'Objective function value: {f}')
         print(f'Number of iterations: {i}')
-        print(f'Execution time: {end_time - start_time}') 
+        print(f'Execution time: {end_time - start_time}')
+
+class TestTensorcomplete_TMac_TT(unittest.TestCase):
+    @unittest.skip('')
+    def test_504030_tensor(self):
+        #Generate tensor-train order 3 tensors
+        start_time = time.perf_counter()
+        scaling = 3
+        A = scaling*np.random.normal(size=(1, 50, 4))
+        B = scaling*np.random.normal(size=(4, 40, 3))
+        C = scaling*np.random.normal(size=(3, 30, 1))
+        overall_tensor = tl.tt_tensor.tt_to_tensor([A, B, C])
+        #Generate all possible combinations of indices
+        value_lists = []
+        for dim_size in (50,40,30):
+            value_lists.append([el for el in range(dim_size)])
+        all_indices = list(itertools.product(*value_lists))
+        #Randomly sample 5% of elements
+        no_elements = int(0.05*50*40*30)
+        # Randomly sample from all_indices
+        sampled_indices = random.sample(all_indices, no_elements)
+        # Generate tensor with all unknown indices set to zero
+        incomplete_tensor = np.zeros(shape=np.shape(overall_tensor))
+        for index in sampled_indices:
+           incomplete_tensor[index] = overall_tensor[index]
+        t, f, i = tensorcomplete_TMac_TT(incomplete_tensor, sampled_indices, [4, 3], convergence_tolerance=1e-15, iteration_limit=100000)
+        difference = np.linalg.norm(np.ndarray.flatten(t - overall_tensor))
+        end_time = time.perf_counter()
+        print('\n----SUBJECTIVE TEST RESULTS for 50x40x30 TMAC-TT AFTER CONVERGENCE-----')
+        print(f'Norm Difference Between predicted and true: {difference}')
+        print(f'Objective function value: {f}')
+        print(f'Number of iterations: {i}')
+        print(f'Execution time: {end_time - start_time}')
+
+    def test_30303030_tensor(self):
+        #Generate tensor-train order 3 tensors
+        start_time = time.perf_counter()
+        scaling = 3
+        A = scaling*np.random.normal(size=(1, 30, 4))
+        B = scaling*np.random.normal(size=(4, 30, 3))
+        C = scaling*np.random.normal(size=(3, 30, 5))
+        D = scaling*np.random.normal(size=(5, 30, 1))
+        overall_tensor = tl.tt_tensor.tt_to_tensor([A, B, C, D])
+        #Generate all possible combinations of indices
+        value_lists = []
+        for dim_size in (30,30,30,30):
+            value_lists.append([el for el in range(dim_size)])
+        all_indices = list(itertools.product(*value_lists))
+        #Randomly sample 5% of elements
+        no_elements = int(0.05*30*30*30*30)
+        # Randomly sample from all_indices
+        sampled_indices = random.sample(all_indices, no_elements)
+        # Generate tensor with all unknown indices set to zero
+        incomplete_tensor = np.zeros(shape=np.shape(overall_tensor))
+        for index in sampled_indices:
+           incomplete_tensor[index] = overall_tensor[index]
+        t, f, i = tensorcomplete_TMac_TT(incomplete_tensor, sampled_indices, [4, 3, 5], convergence_tolerance=1e-15, iteration_limit=100000)
+        difference = np.linalg.norm(np.ndarray.flatten(t - overall_tensor))
+        end_time = time.perf_counter()
+        print('\n----SUBJECTIVE TEST RESULTS for 30x30x30x30 TMAC-TT AFTER CONVERGENCE-----')
+        print(f'Norm Difference Between predicted and true: {difference}')
+        print(f'Objective function value: {f}')
+        print(f'Number of iterations: {i}')
+        print(f'Execution time: {end_time - start_time}')
+
         
 if __name__ == '__main__':
     unittest.main()
