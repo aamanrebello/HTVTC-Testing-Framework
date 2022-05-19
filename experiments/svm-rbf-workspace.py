@@ -15,7 +15,9 @@ import classificationmetrics
 
 
 #OVERALL CONFIGURATION================================
-PATH = 'saved-arrays/svm-rbf/breast-cancer-indicator-100-1.npy'
+BASE_PATH = 'saved-arrays/svm-rbf/'
+FILE_NAME = 'breast-cancer-indicator-100-1.npy'
+PATH = BASE_PATH + FILE_NAME
 load_tensor = False
 
 #OBTAIN TENSOR========================================
