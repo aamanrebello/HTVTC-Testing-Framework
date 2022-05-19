@@ -128,7 +128,7 @@ class TestTensorcomplete_CP_WOPT_dense(unittest.TestCase):
         print(f'Execution time: {end_time - start_time}')
         
     def test_504030_random_tensor(self):
-        #Generate random vectors whose outer producs generate the rank-1 components
+        #Generate random tensor
         start_time = time.perf_counter()
         scaling = 2.5
         overall_tensor = scaling*np.random.normal(size=(50,40,30))
@@ -357,7 +357,7 @@ class TestTensorcomplete_TKD_Geng_Miles(unittest.TestCase):
         print(f'Execution time: {end_time - start_time}')
       
     def test_504030_random_tensor(self):
-        #Generate random vectors whose outer producs generate the rank-1 components
+        #Generate random tensor
         start_time = time.perf_counter()
         scaling = 2.5
         overall_tensor = scaling*np.random.normal(size=(50,40,30))
@@ -378,7 +378,7 @@ class TestTensorcomplete_TKD_Geng_Miles(unittest.TestCase):
         t, f, i, c = tensorcomplete_TKD_Geng_Miles(incomplete_tensor, sampled_indices, [5,5,5], hooi_tolerance=1e-3, iteration_limit=10000)
         difference = np.linalg.norm(np.ndarray.flatten(t - overall_tensor))
         end_time = time.perf_counter()
-        print('\n----SUBJECTIVE TEST RESULTS for 50x40x20 TKD Geng Miles RANDOM TENSOR AFTER CONVERGENCE-----')
+        print('\n----SUBJECTIVE TEST RESULTS for 50x40x30 TKD Geng Miles RANDOM TENSOR AFTER CONVERGENCE-----')
         print(f'Norm Difference Between predicted and true: {difference}')
         print(f'Objective function value: {f}')
         print(f'Number of iterations: {i}')
