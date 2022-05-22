@@ -16,7 +16,7 @@ import classificationmetrics
 
 #OVERALL CONFIGURATION================================
 BASE_PATH = 'saved-arrays/KNN-classification/'
-FILE_NAME = 'breast-cancer-indicator-100-1.npy'
+FILE_NAME = 'wine-indicator-100-2.npy'
 PATH = BASE_PATH + FILE_NAME
 load_tensor = False
 
@@ -27,24 +27,31 @@ if load_tensor:
     tensor = np.load(PATH)
 else:
     task = 'classification'
-    data = loadData(source='sklearn', identifier='breast_cancer', task=task)
-    data_split = trainTestSplit(data)
-    func = evaluationFunctionGenerator(data_split, algorithm='svm-rbf', task=task)
+    data = loadData(source='sklearn', identifier='wine', task=task)
+    binary_data = extractZeroOneClasses(data)
+    data_split = trainTestSplit(binary_data)
+    func = evaluationFunctionGenerator(data_split, algorithm='knn-classification', task=task)
 
     ranges_dict = {
-        'C': {
-            'start': 0.05,
-            'end': 5.00,
-            'interval': 0.05,
-            },
-        'gamma': {
-            'start': 0.05,
-            'end': 5.00,
-            'interval': 0.05,
-            }
+        'N': {
+            'start': 1.0,
+            'end': 100.0,
+            'interval': 1.0,
+        },
+        'weightingFunction': {
+            'values': ['uniform', 'distance'],
+        },
+        'distanceFunction': {
+            'values': ['minkowski']
+        },
+        'p': {
+            'start': 1.0,
+            'end': 100.0,
+            'interval': 1.0,
         }
+    }
         
-    tensor = generateIncompleteErrorTensor(func, ranges_dict, 1.0, metric=classificationmetrics.indicatorFunction)
+    tensor = generateIncompleteErrorTensor(func, ranges_dict, 1.0, metric=classificationmetrics.indicatorFunction, eval_trials=5)
     np.save(file=PATH, arr=tensor)
 
 print(f'STAGE 1 - TENSOR GENERATED - shape: {tensor.shape}')
