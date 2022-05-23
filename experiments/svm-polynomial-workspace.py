@@ -11,7 +11,7 @@ sys.path.insert(1, p)
 from generateerrortensor import generateIncompleteErrorTensor
 from trainmodels import evaluationFunctionGenerator
 from loaddata import loadData, trainTestSplit, extractZeroOneClasses, convertZeroOne
-from tensorsearch import higherDimensionalIndex, findBestValues, hyperparametersFromIndices
+from tensorsearch import sortHyperparameterValues, findBestValues, hyperparametersFromIndices
 import regressionmetrics
 import classificationmetrics
 
@@ -76,6 +76,7 @@ print(tensor)
 BEST_FRACTION = 1/3000
 number_elements = int(BEST_FRACTION*(tensor.size))
 result_dict = findBestValues(tensor, smallest=True, number_of_values=number_elements)
-best_combinations = hyperparametersFromIndices(result_dict['indices'], ranges_dict)
-#print(f'STAGE 2 - TRUE BEST COMBINATIONS IDENTIFIED - {best_combinations}')
-print(result_dict['values'])
+sorted_dict = sortHyperparameterValues(result_dict)
+best_combinations = hyperparametersFromIndices(sorted_dict['indices'], ranges_dict)
+print(f'STAGE 2 - TRUE BEST COMBINATIONS IDENTIFIED - {best_combinations}')
+print(sorted_dict['values'])
