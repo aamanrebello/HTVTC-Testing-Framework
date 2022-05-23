@@ -34,6 +34,20 @@ def findBestValues(tensor, smallest=True, number_of_values=1):
 #-----------------------------------------------------------------------------------------------------
 
 
+#Sorts result of findBestValues based on key values---------------------------------------------------
+def sortHyperparameterValues(hyp_dict, reverse=False):
+    value_list = hyp_dict['values']
+    index_list = hyp_dict['indices']
+    sorted_pairs = sorted(zip(value_list, index_list), reverse=reverse)
+    new_value_list = [x for x,_ in sorted_pairs]
+    new_index_list = [x for _,x in sorted_pairs]
+    return {
+        'values': new_value_list,
+        'indices': new_index_list
+        }
+#-----------------------------------------------------------------------------------------------------
+
+
 #Given a list of indices, return the corresponding hyperparameters in the tensor representation-------
 def hyperparametersFromIndices(index_list, hyperparameter_ranges_dict):
     # Throw exception if number of indices is unequal to the number of hyperparameters

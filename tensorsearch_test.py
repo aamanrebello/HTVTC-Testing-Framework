@@ -1,4 +1,4 @@
-from tensorsearch import higherDimensionalIndex, findBestValues, hyperparametersFromIndices
+from tensorsearch import higherDimensionalIndex, findBestValues, hyperparametersFromIndices, sortHyperparameterValues
 import tensorly as tl
 import numpy as np
 import unittest
@@ -108,6 +108,30 @@ class TestFindBestValues(unittest.TestCase):
         result = findBestValues(RANDOM_TENSOR, smallest=False, number_of_values=4)
         self.assertTrue( np.allclose(result['values'], [86, 89, 99, 98]) )
         self.assertTrue( np.allclose(result['indices'], [(0,1,0,0), (2,1,0,1), (1,0,0,0), (1,0,2,1)]) )
+#------------------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------------------
+class TestSortHyperparameterValues(unittest.TestCase):
+
+    def test_sorting_default(self):
+        initial_dict = {
+            'values': [5.2, 3.3, 1.2, 2.2, 3.3, 6.7, 4.2131, 3.3],
+            'indices': [(1,2,1), (0,1,0), (2,2,2), (4,1,2), (1,0,0), (1,1,1), (2,3,2), (5,6,1)]
+        }
+        result = sortHyperparameterValues(initial_dict)
+        self.assertTrue( np.allclose(result['values'], [1.2, 2.2, 3.3, 3.3, 3.3, 4.2131, 5.2, 6.7]) )
+        self.assertTrue( np.allclose(result['indices'], [(2,2,2), (4,1,2), (0,1,0), (1,0,0), (5,6,1), (2,3,2), (1,2,1), (1,1,1)]) )
+
+    def test_sorting_reverse(self):
+        initial_dict = {
+            'values': [0.2, 0.3, 0.12, 0.22, 0.3, 0.22, -8.6],
+            'indices': [(1,2,3), (1,1,0), (2,2,2), (7,1,2), (1,0,0), (1,1,1), (2,4,2)]
+        }
+        result = sortHyperparameterValues(initial_dict, True)
+        self.assertTrue( np.allclose(result['values'], [0.3, 0.3, 0.22, 0.22, 0.2, 0.12, -8.6]) )
+        self.assertTrue( np.allclose(result['indices'], [(1,1,0), (1,0,0), (7,1,2), (1,1,1), (1,2,3), (2,2,2), (2,4,2)]) )
+
 #------------------------------------------------------------------------------------------
 
 
