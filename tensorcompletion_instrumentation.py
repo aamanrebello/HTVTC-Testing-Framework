@@ -532,7 +532,7 @@ class TestTensorcomplete_TMac_TT(unittest.TestCase):
             value_lists.append([el for el in range(dim_size)])
         all_indices = list(itertools.product(*value_lists))
         #Randomly sample 5% of elements
-        no_elements = int(0.1*50*40*30)
+        no_elements = int(0.5*50*40*30)
         # Randomly sample from all_indices
         sampled_indices = random.sample(all_indices, no_elements)
         # Generate tensor with all unknown indices set to zero
@@ -540,7 +540,7 @@ class TestTensorcomplete_TMac_TT(unittest.TestCase):
         for index in sampled_indices:
            incomplete_tensor[index] = overall_tensor[index]
         #Apply tensor completion to incomplete tensor
-        t, f, i = tensorcomplete_TMac_TT(incomplete_tensor, sampled_indices, [5, 5], convergence_tolerance=1e-15, iteration_limit=150000)
+        t, f, i = tensorcomplete_TMac_TT(incomplete_tensor, sampled_indices, [5, 5], convergence_tolerance=1e-15, iteration_limit=100000)
         difference = np.linalg.norm(np.ndarray.flatten(t - overall_tensor))
         end_time = time.perf_counter()
         print('\n----SUBJECTIVE TEST RESULTS for 50x40x30 DENSE RANDOM TENSOR AFTER CONVERGENCE-----')
