@@ -12,7 +12,7 @@ from generateerrortensor import generateIncompleteErrorTensor
 from trainmodels import evaluationFunctionGenerator
 from loaddata import loadData, trainTestSplit, extractZeroOneClasses, convertZeroOne
 from commonfunctions import generate_incomplete_tensor, Hamming_distance, norm_difference, sortedBestValues, common_count
-from tensorcompletion import tensorcomplete_CP_WOPT_dense, tensorcomplete_CP_WOPT_sparse, tensorcomplete_TKD_Geng_Miles, tensorcomplete_TKD_Gradient, tensorcomplete_TMac_TT
+from tensorcompletion import tensorcomplete_CP_WOPT_dense, tensorcomplete_TKD_Geng_Miles, tensorcomplete_TMac_TT
 from tensorcompletion import ket_augmentation, inverse_ket_augmentation
 import regressionmetrics
 import classificationmetrics
@@ -107,6 +107,10 @@ class TestTensorCompletion_TMAC_TT(unittest.TestCase):
         common = common_count(true_indices, predicted_indices)
         LEN = len(true_indices)
         print(f'TMAC-TT (10%) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
+        true_values = np.array(sorted_dict_10pc['values'])
+        predicted_values = np.array(sorted_predicted_dict_10pc['values'])
+        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        print(f'Error in hyperparameter values: {norm_error}')
         completed = True
         self.assertTrue(completed)
 
@@ -128,6 +132,10 @@ class TestTensorCompletion_TMAC_TT(unittest.TestCase):
         common = common_count(true_indices, predicted_indices)
         LEN = len(true_indices)
         print(f'TMAC-TT (5%) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
+        true_values = np.array(sorted_dict_5pc['values'])
+        predicted_values = np.array(sorted_predicted_dict_5pc['values'])
+        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        print(f'Error in hyperparameter values: {norm_error}')
         completed = True
         self.assertTrue(completed)
 
@@ -149,6 +157,10 @@ class TestTensorCompletion_TMAC_TT(unittest.TestCase):
         common = common_count(true_indices, predicted_indices)
         LEN = len(true_indices)
         print(f'TMAC-TT (1%) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
+        true_values = np.array(sorted_dict_1pc['values'])
+        predicted_values = np.array(sorted_predicted_dict_1pc['values'])
+        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        print(f'Error in hyperparameter values: {norm_error}')
         completed = True
         self.assertTrue(completed)
 
@@ -170,6 +182,10 @@ class TestTensorCompletion_TMAC_TT(unittest.TestCase):
         common = common_count(true_indices, predicted_indices)
         LEN = len(true_indices)
         print(f'TMAC-TT (top 20) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
+        true_values = np.array(sorted_dict_top20['values'])
+        predicted_values = np.array(sorted_predicted_dict_top20['values'])
+        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        print(f'Error in hyperparameter values: {norm_error}')
         completed = True
         self.assertTrue(completed)
 
@@ -200,6 +216,10 @@ class TestTensorCompletion_Geng_Miles(unittest.TestCase):
         common = common_count(true_indices, predicted_indices)
         LEN = len(true_indices)
         print(f'Geng-Miles (10%) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
+        true_values = np.array(sorted_dict_10pc['values'])
+        predicted_values = np.array(sorted_predicted_dict_10pc['values'])
+        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        print(f'Error in hyperparameter values: {norm_error}')
         completed = True
         self.assertTrue(completed)
 
@@ -221,6 +241,10 @@ class TestTensorCompletion_Geng_Miles(unittest.TestCase):
         common = common_count(true_indices, predicted_indices)
         LEN = len(true_indices)
         print(f'Geng-Miles (5%) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
+        true_values = np.array(sorted_dict_5pc['values'])
+        predicted_values = np.array(sorted_predicted_dict_5pc['values'])
+        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        print(f'Error in hyperparameter values: {norm_error}')
         completed = True
         self.assertTrue(completed)
 
@@ -242,6 +266,10 @@ class TestTensorCompletion_Geng_Miles(unittest.TestCase):
         common = common_count(true_indices, predicted_indices)
         LEN = len(true_indices)
         print(f'Geng-Miles (1%) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
+        true_values = np.array(sorted_dict_1pc['values'])
+        predicted_values = np.array(sorted_predicted_dict_1pc['values'])
+        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        print(f'Error in hyperparameter values: {norm_error}')
         completed = True
         self.assertTrue(completed)
 
@@ -263,6 +291,119 @@ class TestTensorCompletion_Geng_Miles(unittest.TestCase):
         common = common_count(true_indices, predicted_indices)
         LEN = len(true_indices)
         print(f'Geng-Miles (top 20) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
+        true_values = np.array(sorted_dict_top20['values'])
+        predicted_values = np.array(sorted_predicted_dict_top20['values'])
+        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        print(f'Error in hyperparameter values: {norm_error}')
+        completed = True
+        self.assertTrue(completed)
+        
+    @classmethod
+    def tearDownClass(TestTensorCompletion):
+        print()
+        print('-------------------------------')
+        print()
+
+
+class TestTensorCompletion_CP_WOPT_Dense(unittest.TestCase):
+
+    def test_CP_WOPT_Dense_top10pc(self):
+        #Apply tensor completion
+        CP_WOPT_PREDICTED_TENSOR, _, _ = tensorcomplete_CP_WOPT_dense(incomplete_tensor, known_indices, 1, stepsize=0.01, iteration_limit=10000)
+        #Check norm difference from true tensor
+        diff = norm_difference(CP_WOPT_PREDICTED_TENSOR, tensor)
+        #Find ratio to tensor norm
+        ratio = diff/tensor_norm
+        print(f'CP-WOPT Dense (10%) ratio: {ratio}')
+        self.assertTrue(ratio < ratio_threshold)
+        #Obtain top 10% according to predicted tensor
+        sorted_predicted_dict_10pc = sortedBestValues(CP_WOPT_PREDICTED_TENSOR, smallest=smallest, number_of_values=no_elements_10pc)
+        true_indices = sorted_dict_10pc['indices']
+        predicted_indices = sorted_predicted_dict_10pc['indices']
+        hamming_distance = Hamming_distance(true_indices, predicted_indices)
+        aug_hamming_distance = Hamming_distance(true_indices, predicted_indices, augmented=True)
+        common = common_count(true_indices, predicted_indices)
+        LEN = len(true_indices)
+        print(f'CP-WOPT Dense (10%) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
+        true_values = np.array(sorted_dict_10pc['values'])
+        predicted_values = np.array(sorted_predicted_dict_10pc['values'])
+        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        print(f'Error in hyperparameter values: {norm_error}')
+        completed = True
+        self.assertTrue(completed)
+
+    def test_CP_WOPT_Dense_top5pc(self):
+        #Apply tensor completion
+        CP_WOPT_PREDICTED_TENSOR, _, _ = tensorcomplete_CP_WOPT_dense(incomplete_tensor, known_indices, 1, stepsize=0.01, iteration_limit=10000)
+        #Check norm difference from true tensor
+        diff = norm_difference(CP_WOPT_PREDICTED_TENSOR, tensor)
+        #Find ratio to tensor norm
+        ratio = diff/tensor_norm
+        print(f'CP-WOPT Dense (5%) ratio: {ratio}')
+        self.assertTrue(ratio < ratio_threshold)
+        #Obtain top 5% according to predicted tensor
+        sorted_predicted_dict_5pc = sortedBestValues(CP_WOPT_PREDICTED_TENSOR, smallest=smallest, number_of_values=no_elements_5pc)
+        true_indices = sorted_dict_5pc['indices']
+        predicted_indices = sorted_predicted_dict_5pc['indices']
+        hamming_distance = Hamming_distance(true_indices, predicted_indices)
+        aug_hamming_distance = Hamming_distance(true_indices, predicted_indices, augmented=True)
+        common = common_count(true_indices, predicted_indices)
+        LEN = len(true_indices)
+        print(f'CP-WOPT Dense (5%) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
+        true_values = np.array(sorted_dict_5pc['values'])
+        predicted_values = np.array(sorted_predicted_dict_5pc['values'])
+        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        print(f'Error in hyperparameter values: {norm_error}')
+        completed = True
+        self.assertTrue(completed)
+
+    def test_CP_WOPT_Dense_top1pc(self):
+        #Apply tensor completion
+        CP_WOPT_PREDICTED_TENSOR, _, _ = tensorcomplete_CP_WOPT_dense(incomplete_tensor, known_indices, 1, stepsize=0.01, iteration_limit=10000)
+        #Check norm difference from true tensor
+        diff = norm_difference(CP_WOPT_PREDICTED_TENSOR, tensor)
+        #Find ratio to tensor norm
+        ratio = diff/tensor_norm
+        print(f'CP-WOPT (1%) ratio: {ratio}')
+        self.assertTrue(ratio < ratio_threshold)
+        #Obtain top 5% according to predicted tensor
+        sorted_predicted_dict_1pc = sortedBestValues(CP_WOPT_PREDICTED_TENSOR, smallest=smallest, number_of_values=no_elements_1pc)
+        true_indices = sorted_dict_1pc['indices']
+        predicted_indices = sorted_predicted_dict_1pc['indices']
+        hamming_distance = Hamming_distance(true_indices, predicted_indices)
+        aug_hamming_distance = Hamming_distance(true_indices, predicted_indices, augmented=True)
+        common = common_count(true_indices, predicted_indices)
+        LEN = len(true_indices)
+        print(f'CP-WOPT (1%) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
+        true_values = np.array(sorted_dict_1pc['values'])
+        predicted_values = np.array(sorted_predicted_dict_1pc['values'])
+        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        print(f'Error in hyperparameter values: {norm_error}')
+        completed = True
+        self.assertTrue(completed)
+
+    def test_CP_WOPT_Dense_top20(self):
+        #Apply tensor completion
+        CP_WOPT_PREDICTED_TENSOR, _, _ = tensorcomplete_CP_WOPT_dense(incomplete_tensor, known_indices, 1, stepsize=0.01, iteration_limit=10000)
+        #Check norm difference from true tensor
+        diff = norm_difference(CP_WOPT_PREDICTED_TENSOR, tensor)
+        #Find ratio to tensor norm
+        ratio = diff/tensor_norm
+        print(f'CP-WOPT (top 20) ratio: {ratio}')
+        self.assertTrue(ratio < ratio_threshold)
+        #Obtain top 20 according to predicted tensor
+        sorted_predicted_dict_top20 = sortedBestValues(CP_WOPT_PREDICTED_TENSOR, smallest=smallest, number_of_values=20)
+        true_indices = sorted_dict_top20['indices']
+        predicted_indices = sorted_predicted_dict_top20['indices']
+        hamming_distance = Hamming_distance(true_indices, predicted_indices)
+        aug_hamming_distance = Hamming_distance(true_indices, predicted_indices, augmented=True)
+        common = common_count(true_indices, predicted_indices)
+        LEN = len(true_indices)
+        print(f'CP-WOPT (top 20) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
+        true_values = np.array(sorted_dict_top20['values'])
+        predicted_values = np.array(sorted_predicted_dict_top20['values'])
+        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        print(f'Error in hyperparameter values: {norm_error}')
         completed = True
         self.assertTrue(completed)
         
