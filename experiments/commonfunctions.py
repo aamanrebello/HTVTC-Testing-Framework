@@ -12,7 +12,10 @@ def sortedBestValues(tensor, number_of_values, smallest=True):
 
 #Generates an incomplete tensor from a fully known one, randomly sampling the
 #indices and providing them along with the incomplete tensor
-def generate_incomplete_tensor(tensor, known_fraction=0.25):
+def generate_incomplete_tensor(raw_tensor, known_fraction=0.25):
+    #Remove all dimensions of size 1
+    tensor = np.squeeze(raw_tensor)
+    #Obtain shape
     shape = tensor.shape
     #Generate all possible combinations of indices
     total_elements = 1
