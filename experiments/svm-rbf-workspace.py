@@ -81,11 +81,11 @@ print(f'STAGE 2 - TRUE BEST COMBINATIONS IDENTIFIED')
 #GENERATE INCOMPLETE TENSOR===========================
 known_fraction = 0.25
 incomplete_tensor, known_indices = generate_incomplete_tensor(tensor, known_fraction)
-print(f'STAGE 3 - INCOMPLETE TENSOR GENERATED')
+print(f'STAGE 3 - INCOMPLETE TENSOR GENERATED - known elements: {known_fraction}')
 
 #TEST TENSOR COMPLETION================================
 tensor_norm = np.linalg.norm(tensor)
-ratio_threshold = 0.05
+ratio_threshold = 5
 
 class TestTensorCompletion_TMAC_TT(unittest.TestCase):
 
@@ -109,8 +109,13 @@ class TestTensorCompletion_TMAC_TT(unittest.TestCase):
         print(f'TMAC-TT (10%) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
         true_values = np.array(sorted_dict_10pc['values'])
         predicted_values = np.array(sorted_predicted_dict_10pc['values'])
-        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        norm_error = np.linalg.norm(true_values - predicted_values)/(np.linalg.norm(true_values) + 1e-10)
         print(f'Error in hyperparameter values: {norm_error}')
+        print(ratio)
+        print(hamming_distance)
+        print(aug_hamming_distance)
+        print(common)
+        print(norm_error)
         completed = True
         self.assertTrue(completed)
 
@@ -134,8 +139,13 @@ class TestTensorCompletion_TMAC_TT(unittest.TestCase):
         print(f'TMAC-TT (5%) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
         true_values = np.array(sorted_dict_5pc['values'])
         predicted_values = np.array(sorted_predicted_dict_5pc['values'])
-        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        norm_error = np.linalg.norm(true_values - predicted_values)/(np.linalg.norm(true_values) + 1e-10)
         print(f'Error in hyperparameter values: {norm_error}')
+        print(ratio)
+        print(hamming_distance)
+        print(aug_hamming_distance)
+        print(common)
+        print(norm_error)
         completed = True
         self.assertTrue(completed)
 
@@ -159,8 +169,13 @@ class TestTensorCompletion_TMAC_TT(unittest.TestCase):
         print(f'TMAC-TT (1%) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
         true_values = np.array(sorted_dict_1pc['values'])
         predicted_values = np.array(sorted_predicted_dict_1pc['values'])
-        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        norm_error = np.linalg.norm(true_values - predicted_values)/(np.linalg.norm(true_values) + 1e-10)
         print(f'Error in hyperparameter values: {norm_error}')
+        print(ratio)
+        print(hamming_distance)
+        print(aug_hamming_distance)
+        print(common)
+        print(norm_error)
         completed = True
         self.assertTrue(completed)
 
@@ -184,8 +199,13 @@ class TestTensorCompletion_TMAC_TT(unittest.TestCase):
         print(f'TMAC-TT (top 20) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
         true_values = np.array(sorted_dict_top20['values'])
         predicted_values = np.array(sorted_predicted_dict_top20['values'])
-        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        norm_error = np.linalg.norm(true_values - predicted_values)/(np.linalg.norm(true_values) + 1e-10)
         print(f'Error in hyperparameter values: {norm_error}')
+        print(ratio)
+        print(hamming_distance)
+        print(aug_hamming_distance)
+        print(common)
+        print(norm_error)
         completed = True
         self.assertTrue(completed)
 
@@ -218,8 +238,13 @@ class TestTensorCompletion_Geng_Miles(unittest.TestCase):
         print(f'Geng-Miles (10%) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
         true_values = np.array(sorted_dict_10pc['values'])
         predicted_values = np.array(sorted_predicted_dict_10pc['values'])
-        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        norm_error = np.linalg.norm(true_values - predicted_values)/(np.linalg.norm(true_values) + 1e-10)
         print(f'Error in hyperparameter values: {norm_error}')
+        print(ratio)
+        print(hamming_distance)
+        print(aug_hamming_distance)
+        print(common)
+        print(norm_error)
         completed = True
         self.assertTrue(completed)
 
@@ -243,8 +268,13 @@ class TestTensorCompletion_Geng_Miles(unittest.TestCase):
         print(f'Geng-Miles (5%) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
         true_values = np.array(sorted_dict_5pc['values'])
         predicted_values = np.array(sorted_predicted_dict_5pc['values'])
-        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        norm_error = np.linalg.norm(true_values - predicted_values)/(np.linalg.norm(true_values) + 1e-10)
         print(f'Error in hyperparameter values: {norm_error}')
+        print(ratio)
+        print(hamming_distance)
+        print(aug_hamming_distance)
+        print(common)
+        print(norm_error)
         completed = True
         self.assertTrue(completed)
 
@@ -268,8 +298,13 @@ class TestTensorCompletion_Geng_Miles(unittest.TestCase):
         print(f'Geng-Miles (1%) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
         true_values = np.array(sorted_dict_1pc['values'])
         predicted_values = np.array(sorted_predicted_dict_1pc['values'])
-        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        norm_error = np.linalg.norm(true_values - predicted_values)/(np.linalg.norm(true_values) + 1e-10)
         print(f'Error in hyperparameter values: {norm_error}')
+        print(ratio)
+        print(hamming_distance)
+        print(aug_hamming_distance)
+        print(common)
+        print(norm_error)
         completed = True
         self.assertTrue(completed)
 
@@ -293,8 +328,13 @@ class TestTensorCompletion_Geng_Miles(unittest.TestCase):
         print(f'Geng-Miles (top 20) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
         true_values = np.array(sorted_dict_top20['values'])
         predicted_values = np.array(sorted_predicted_dict_top20['values'])
-        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        norm_error = np.linalg.norm(true_values - predicted_values)/(np.linalg.norm(true_values) + 1e-10)
         print(f'Error in hyperparameter values: {norm_error}')
+        print(ratio)
+        print(hamming_distance)
+        print(aug_hamming_distance)
+        print(common)
+        print(norm_error)
         completed = True
         self.assertTrue(completed)
         
@@ -327,8 +367,13 @@ class TestTensorCompletion_CP_WOPT_Dense(unittest.TestCase):
         print(f'CP-WOPT Dense (10%) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
         true_values = np.array(sorted_dict_10pc['values'])
         predicted_values = np.array(sorted_predicted_dict_10pc['values'])
-        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        norm_error = np.linalg.norm(true_values - predicted_values)/(np.linalg.norm(true_values) + 1e-10)
         print(f'Error in hyperparameter values: {norm_error}')
+        print(ratio)
+        print(hamming_distance)
+        print(aug_hamming_distance)
+        print(common)
+        print(norm_error)
         completed = True
         self.assertTrue(completed)
 
@@ -352,8 +397,13 @@ class TestTensorCompletion_CP_WOPT_Dense(unittest.TestCase):
         print(f'CP-WOPT Dense (5%) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
         true_values = np.array(sorted_dict_5pc['values'])
         predicted_values = np.array(sorted_predicted_dict_5pc['values'])
-        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        norm_error = np.linalg.norm(true_values - predicted_values)/(np.linalg.norm(true_values) + 1e-10)
         print(f'Error in hyperparameter values: {norm_error}')
+        print(ratio)
+        print(hamming_distance)
+        print(aug_hamming_distance)
+        print(common)
+        print(norm_error)
         completed = True
         self.assertTrue(completed)
 
@@ -377,8 +427,13 @@ class TestTensorCompletion_CP_WOPT_Dense(unittest.TestCase):
         print(f'CP-WOPT (1%) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
         true_values = np.array(sorted_dict_1pc['values'])
         predicted_values = np.array(sorted_predicted_dict_1pc['values'])
-        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        norm_error = np.linalg.norm(true_values - predicted_values)/(np.linalg.norm(true_values) + 1e-10)
         print(f'Error in hyperparameter values: {norm_error}')
+        print(ratio)
+        print(hamming_distance)
+        print(aug_hamming_distance)
+        print(common)
+        print(norm_error)
         completed = True
         self.assertTrue(completed)
 
@@ -402,8 +457,13 @@ class TestTensorCompletion_CP_WOPT_Dense(unittest.TestCase):
         print(f'CP-WOPT (top 20) Hamming distance: {hamming_distance}, augmented hamming distance: {aug_hamming_distance}, common elements: {common}, length: {LEN}')
         true_values = np.array(sorted_dict_top20['values'])
         predicted_values = np.array(sorted_predicted_dict_top20['values'])
-        norm_error = np.linalg.norm(true_values - predicted_values)/np.linalg.norm(true_values)
+        norm_error = np.linalg.norm(true_values - predicted_values)/(np.linalg.norm(true_values) + 1e-10)
         print(f'Error in hyperparameter values: {norm_error}')
+        print(ratio)
+        print(hamming_distance)
+        print(aug_hamming_distance)
+        print(common)
+        print(norm_error)
         completed = True
         self.assertTrue(completed)
         
