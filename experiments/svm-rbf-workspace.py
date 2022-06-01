@@ -58,7 +58,7 @@ else:
 
     #Note that while the function says generate incomplete, we are actually generating a complete tensor
     #as the fraction is 1.0
-    tensor = generateIncompleteErrorTensor(func, ranges_dict, 1.0, metric=classificationmetrics.indicatorFunction)
+    tensor, _ = generateIncompleteErrorTensor(func, ranges_dict, 1.0, metric=classificationmetrics.indicatorFunction)
     np.save(file=ARR_PATH, arr=tensor)
 
 print(f'STAGE 1 - TENSOR GENERATED')

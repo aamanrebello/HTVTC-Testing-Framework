@@ -64,7 +64,7 @@ else:
     with open(RANGE_DICT_PATH, 'w') as fp:
         json.dump(ranges_dict , fp)
         
-    tensor = generateIncompleteErrorTensor(func, ranges_dict, 1.0, metric=classificationmetrics.indicatorFunction, eval_trials=5)
+    tensor, _ = generateIncompleteErrorTensor(func, ranges_dict, 1.0, metric=classificationmetrics.indicatorFunction, eval_trials=5)
     np.save(file=ARR_PATH, arr=tensor)
 
 tensor = np.squeeze(tensor)
@@ -256,8 +256,6 @@ class TestTensorCompletion_Geng_Miles(unittest.TestCase):
         print(aug_hamming_distance)
         print(common)
         print(norm_error)
-        print(true_values)
-        print(predicted_values)
         completed = True
         self.assertTrue(completed)
 

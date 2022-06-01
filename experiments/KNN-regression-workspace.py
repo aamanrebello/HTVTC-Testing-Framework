@@ -63,7 +63,7 @@ else:
     with open(RANGE_DICT_PATH, 'w') as fp:
         json.dump(ranges_dict , fp)
         
-    tensor = generateIncompleteErrorTensor(func, ranges_dict, 1.0, metric=regressionmetrics.logcosh, eval_trials=5)
+    tensor, _ = generateIncompleteErrorTensor(func, ranges_dict, 1.0, metric=regressionmetrics.logcosh, eval_trials=5)
     np.save(file=ARR_PATH, arr=tensor)
 
 tensor = np.squeeze(tensor)

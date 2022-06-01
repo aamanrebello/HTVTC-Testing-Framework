@@ -67,7 +67,7 @@ else:
     with open(RANGE_DICT_PATH, 'w') as fp:
         json.dump(ranges_dict , fp)
         
-    tensor = generateIncompleteErrorTensor(func, ranges_dict, 1.0, metric=classificationmetrics.KullbackLeiblerDivergence, evaluation_mode='probability')
+    tensor, _ = generateIncompleteErrorTensor(func, ranges_dict, 1.0, metric=classificationmetrics.KullbackLeiblerDivergence, evaluation_mode='probability')
     np.save(file=ARR_PATH, arr=tensor)
 
 print(f'STAGE 1 - TENSOR GENERATED - shape: {tensor.shape}')

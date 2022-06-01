@@ -25,9 +25,16 @@ class TestGenerateErrorTensor(unittest.TestCase):
             }
         }
 
-        result = generateIncompleteErrorTensor(eval_func, ranges_dict, 0.4, metric=regressionmetrics.mse)
-        self.assertTrue(np.shape(result) == (41, 11))
-        self.assertTrue(np.count_nonzero(result) == 180)
+        tensor, indices = generateIncompleteErrorTensor(eval_func, ranges_dict, 0.4, metric=regressionmetrics.mse)
+        #Test tensor
+        self.assertTrue(np.shape(tensor) == (41, 11))
+        self.assertTrue(np.count_nonzero(tensor) == 180)
+        #Test indices
+        self.assertTrue(len(indices) == 180)
+        maxvalues = list(map(max, indices))
+        self.assertTrue(max(maxvalues) <= 40)
+        minvalues = list(map(min, indices))
+        self.assertTrue(min(minvalues) >= 0)
 
 
     # Specify known fraction as 0.0
@@ -52,9 +59,13 @@ class TestGenerateErrorTensor(unittest.TestCase):
             },
         }
 
-        result = generateIncompleteErrorTensor(eval_func, ranges_dict, 0.0, metric=classificationmetrics.hingeLoss)
-        self.assertTrue(np.shape(result) == (41, 11, 13))
-        self.assertTrue(np.allclose(result, np.zeros((41,11,13))))
+        tensor, indices = generateIncompleteErrorTensor(eval_func, ranges_dict, 0.0, metric=classificationmetrics.hingeLoss)
+        #Test tensor
+        self.assertTrue(np.shape(tensor) == (41, 11, 13))
+        self.assertTrue(np.allclose(tensor, np.zeros((41,11,13))))
+        #Test indices
+        self.assertTrue(len(indices) == 0)
+
 
     # Using real data------------------------------------------------------------------------------
 
@@ -73,9 +84,16 @@ class TestGenerateErrorTensor(unittest.TestCase):
             },
         }
 
-        result = generateIncompleteErrorTensor(func, ranges_dict, 0.3, metric=regressionmetrics.mape)
-        self.assertTrue(np.shape(result) == (61,))
-        self.assertTrue(np.count_nonzero(result) == 18)
+        tensor, indices = generateIncompleteErrorTensor(func, ranges_dict, 0.3, metric=regressionmetrics.mape)
+        #Test tensor
+        self.assertTrue(np.shape(tensor) == (61,))
+        self.assertTrue(np.count_nonzero(tensor) == 18)
+        #Test indices
+        self.assertTrue(len(indices) == 18)
+        maxvalues = list(map(max, indices))
+        self.assertTrue(max(maxvalues) <= 60)
+        minvalues = list(map(min, indices))
+        self.assertTrue(min(minvalues) >= 0)
 
     # svm-rbf
     def test_svm_rbf(self):
@@ -97,9 +115,16 @@ class TestGenerateErrorTensor(unittest.TestCase):
             }
         }
         
-        result = generateIncompleteErrorTensor(func, ranges_dict, 0.2, metric=classificationmetrics.indicatorFunction)
-        self.assertTrue(np.shape(result) == (50,10))
-        self.assertTrue(np.count_nonzero(result) == 100)
+        tensor, indices = generateIncompleteErrorTensor(func, ranges_dict, 0.2, metric=classificationmetrics.indicatorFunction)
+        #Test tensor
+        self.assertTrue(np.shape(tensor) == (50,10))
+        self.assertTrue(np.count_nonzero(tensor) == 100)
+        #Test indices
+        self.assertTrue(len(indices) == 100)
+        maxvalues = list(map(max, indices))
+        self.assertTrue(max(maxvalues) <= 49)
+        minvalues = list(map(min, indices))
+        self.assertTrue(min(minvalues) >= 0)
 
     # svm-polynomial
     def test_svm_polynomial(self):
@@ -133,9 +158,16 @@ class TestGenerateErrorTensor(unittest.TestCase):
             }
         }
         
-        result = generateIncompleteErrorTensor(func, ranges_dict, 0.1, metric=classificationmetrics.hingeLoss, eval_trials=2, evaluation_mode='raw-score')
-        self.assertTrue(np.shape(result) == (30,30,31,4))
-        self.assertTrue(np.count_nonzero(result) <= 31*12*30)
+        tensor, indices = generateIncompleteErrorTensor(func, ranges_dict, 0.1, metric=classificationmetrics.hingeLoss, eval_trials=2, evaluation_mode='raw-score')
+        #Test tensor
+        self.assertTrue(np.shape(tensor) == (30,30,31,4))
+        self.assertTrue(np.count_nonzero(tensor) <= 31*12*30)
+        #Test indices
+        self.assertTrue(len(indices) == 31*12*30)
+        maxvalues = list(map(max, indices))
+        self.assertTrue(max(maxvalues) <= 30)
+        minvalues = list(map(min, indices))
+        self.assertTrue(min(minvalues) >= 0)
 
     # KNN-regression
     def test_KNN_regression(self):
@@ -163,9 +195,16 @@ class TestGenerateErrorTensor(unittest.TestCase):
             }
         }
         
-        result = generateIncompleteErrorTensor(func, ranges_dict, 0.5, metric=regressionmetrics.logcosh, eval_trials=10)
-        self.assertTrue(np.shape(result) == (20,2,1,10))
-        self.assertTrue(np.count_nonzero(result) == 200)
+        tensor, indices = generateIncompleteErrorTensor(func, ranges_dict, 0.5, metric=regressionmetrics.logcosh, eval_trials=10)
+        #Test tensor
+        self.assertTrue(np.shape(tensor) == (20,2,1,10))
+        self.assertTrue(np.count_nonzero(tensor) == 200)
+        #Test indices
+        self.assertTrue(len(indices) == 200)
+        maxvalues = list(map(max, indices))
+        self.assertTrue(max(maxvalues) <= 19)
+        minvalues = list(map(min, indices))
+        self.assertTrue(min(minvalues) >= 0)
 
     # KNN-classification
     def test_KNN_classification(self):
@@ -194,9 +233,16 @@ class TestGenerateErrorTensor(unittest.TestCase):
             }
         }
         
-        result = generateIncompleteErrorTensor(func, ranges_dict, 0.3, metric=classificationmetrics.indicatorFunction, eval_trials=5)
-        self.assertTrue(np.shape(result) == (20,2,1,91))
-        self.assertTrue(np.count_nonzero(result) <= 1092)
+        tensor, indices = generateIncompleteErrorTensor(func, ranges_dict, 0.3, metric=classificationmetrics.indicatorFunction, eval_trials=5)
+        #Test tensor
+        self.assertTrue(np.shape(tensor) == (20,2,1,91))
+        self.assertTrue(np.count_nonzero(tensor) <= 1092)
+        #Test indices
+        self.assertTrue(len(indices) == 1092)
+        maxvalues = list(map(max, indices))
+        self.assertTrue(max(maxvalues) <= 90)
+        minvalues = list(map(min, indices))
+        self.assertTrue(min(minvalues) >= 0)
 
     # Random forest
     def test_random_forest(self):
@@ -228,9 +274,16 @@ class TestGenerateErrorTensor(unittest.TestCase):
             },
         }
         
-        result = generateIncompleteErrorTensor(func, ranges_dict, 0.4, metric=classificationmetrics.KullbackLeiblerDivergence, evaluation_mode='probability')
-        self.assertTrue(np.shape(result) == (5,5,2,9,10))
-        self.assertTrue(np.count_nonzero(result) <= 5*5*2*9*10*0.4)
+        tensor, indices = generateIncompleteErrorTensor(func, ranges_dict, 0.4, metric=classificationmetrics.KullbackLeiblerDivergence, evaluation_mode='probability')
+        #Test tensor
+        self.assertTrue(np.shape(tensor) == (5,5,2,9,10))
+        self.assertTrue(np.count_nonzero(tensor) <= 5*5*2*9*10*0.4)
+        #Test indices
+        self.assertTrue(len(indices) == 5*5*2*9*10*0.4)
+        maxvalues = list(map(max, indices))
+        self.assertTrue(max(maxvalues) <= 9)
+        minvalues = list(map(min, indices))
+        self.assertTrue(min(minvalues) >= 0)
 
 if __name__ == '__main__':
     unittest.main()

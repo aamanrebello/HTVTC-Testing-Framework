@@ -68,7 +68,7 @@ else:
     with open(RANGE_DICT_PATH, 'w') as fp:
         json.dump(ranges_dict , fp)
         
-    tensor = generateIncompleteErrorTensor(func, ranges_dict, 1.0, metric=classificationmetrics.hingeLoss, evaluation_mode='raw-score')
+    tensor, _ = generateIncompleteErrorTensor(func, ranges_dict, 1.0, metric=classificationmetrics.hingeLoss, evaluation_mode='raw-score')
     np.save(file=ARR_PATH, arr=tensor)
 
 print(f'STAGE 1 - TENSOR GENERATED')

@@ -61,5 +61,5 @@ def generateIncompleteErrorTensor(eval_func, ranges_dict, known_fraction, metric
             eval_result_avg += eval_func(**current_hyperparameter_values, metric=metric, evaluation_mode=evaluation_mode)/eval_trials
         error_tensor[tuple(tensor_index)] = eval_result_avg
 
-    #return populated tensor
-    return error_tensor
+    #return populated tensor and indices
+    return error_tensor, sampled_indices
