@@ -1,0 +1,1 @@
+{"no_trees": {"values": [1, 5, 10, 15, 20, 25, 30, 35, 40]}, "max_tree_depth": {"values": [1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]}, "bootstrap": {"values": [true, false]}, "min_samples_split": {"start": 2.0, "end": 20.0, "interval": 1.0}, "no_features": {"start": 1.0, "end": 13.0, "interval": 1.0}}
