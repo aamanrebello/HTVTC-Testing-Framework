@@ -16,20 +16,23 @@ import time
 #Library only applicable in linux
 #from resource import getrusage, RUSAGE_SELF
 
-task = 'classification'
-data = loadData(source='sklearn', identifier='breast_cancer', task=task)
+task = 'regression'
+data = loadData(source='sklearn', identifier='diabetes', task=task)
 data_split = trainTestSplit(data)
-func = evaluationFunctionGenerator(data_split, algorithm='svm-rbf', task=task)
+func = evaluationFunctionGenerator(data_split, algorithm='knn-regression', task=task)
 
 
-def objective(C, gamma):
+def objective(N, p, wf):
+    weightingFunction = 'uniform'
+    if wf > 0:
+        weightingFunction = 'distance'
+    distanceFunction = 'minkowski'
     #subtract from 1 because the library only supports maximise
-    return 1 - func(C, gamma, metric=classificationmetrics.indicatorFunction)
+    return 50 - func(N=N, weightingFunction=weightingFunction, distanceFunction=distanceFunction, p=p, metric=regressionmetrics.logcosh)
 
 start_time = time.perf_counter()
 
-
-pbounds = {'C': (0.05, 5.0), 'gamma': (0.05, 5.0)}
+pbounds = {'N': (1, 100), 'p': (1, 100), 'wf': (-1,1)}
 
 optimizer = BayesianOptimization(
     f=objective,

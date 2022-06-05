@@ -17,19 +17,27 @@ import time
 #from resource import getrusage, RUSAGE_SELF
 
 task = 'classification'
-data = loadData(source='sklearn', identifier='breast_cancer', task=task)
-data_split = trainTestSplit(data)
-func = evaluationFunctionGenerator(data_split, algorithm='svm-rbf', task=task)
+data = loadData(source='sklearn', identifier='wine', task=task)
+binary_data = extractZeroOneClasses(data)
+data_split = trainTestSplit(binary_data)
+func = evaluationFunctionGenerator(data_split, algorithm='random-forest', task=task)
 
-
-def objective(C, gamma):
+def objective(no_trees, max_tree_depth, bootstrap_ind, min_samples_split, no_features):
+    no_trees  = int(no_trees)
+    max_tree_depth = int(max_tree_depth)
+    min_samples_split = int(min_samples_split)
+    no_features = int(no_features)
+    bootstrap = True
+    if bootstrap_ind > 0:
+        bootstrap = False
     #subtract from 1 because the library only supports maximise
-    return 1 - func(C, gamma, metric=classificationmetrics.indicatorFunction)
+    return 1 - func(no_trees=no_trees, max_tree_depth=max_tree_depth, bootstrap=bootstrap, min_samples_split=min_samples_split, no_features=no_features, metric=classificationmetrics.KullbackLeiblerDivergence)
 
+#Begin measuring time
 start_time = time.perf_counter()
 
-
-pbounds = {'C': (0.05, 5.0), 'gamma': (0.05, 5.0)}
+#Begin optimisation
+pbounds = {'no_trees': (1, 40), 'max_tree_depth': (1, 20), 'bootstrap_ind': (-1,1), 'min_samples_split': (2,10), 'no_features': (1,10)}
 
 optimizer = BayesianOptimization(
     f=objective,

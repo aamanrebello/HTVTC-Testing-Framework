@@ -17,19 +17,21 @@ import time
 #from resource import getrusage, RUSAGE_SELF
 
 task = 'classification'
-data = loadData(source='sklearn', identifier='breast_cancer', task=task)
-data_split = trainTestSplit(data)
-func = evaluationFunctionGenerator(data_split, algorithm='svm-rbf', task=task)
+data = loadData(source='sklearn', identifier='iris', task=task)
+binary_data = extractZeroOneClasses(data)
+adjusted_data = convertZeroOne(binary_data, -1, 1)
+data_split = trainTestSplit(adjusted_data)
+func = evaluationFunctionGenerator(data_split, algorithm='svm-polynomial', task=task)
 
 
-def objective(C, gamma):
+def objective(C, gamma, constant_term, degree):
     #subtract from 1 because the library only supports maximise
-    return 1 - func(C, gamma, metric=classificationmetrics.indicatorFunction)
+    return 1 - func(C=C, gamma=gamma, constant_term=constant_term, degree=degree, metric=classificationmetrics.hingeLoss)
+
 
 start_time = time.perf_counter()
 
-
-pbounds = {'C': (0.05, 5.0), 'gamma': (0.05, 5.0)}
+pbounds = {'C': (0.1, 3.0), 'gamma': (0.1, 3.0), 'constant_term': (0.0, 3.0), 'degree': (0.0, 3.0)}
 
 optimizer = BayesianOptimization(
     f=objective,
