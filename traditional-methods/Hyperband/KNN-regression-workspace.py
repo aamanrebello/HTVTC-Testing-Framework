@@ -17,8 +17,8 @@ import time
 #Library only applicable in linux
 #from resource import getrusage, RUSAGE_SELF
 
-task = 'classification'
-data = loadData(source='sklearn', identifier='breast_cancer', task=task)
+task = 'regression'
+data = loadData(source='sklearn', identifier='diabetes', task=task)
 data_split = trainTestSplit(data)
 train_X = data_split['training_features']
 train_y = data_split['training_labels']
