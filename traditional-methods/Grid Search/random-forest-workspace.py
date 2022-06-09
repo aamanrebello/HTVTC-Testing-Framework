@@ -17,6 +17,8 @@ import time
 #Library only applicable in linux
 #from resource import getrusage, RUSAGE_SELF
 
+quantity = 'EXEC-TIME'
+
 task = 'classification'
 data = loadData(source='sklearn', identifier='wine', task=task)
 binary_data = extractZeroOneClasses(data)
@@ -33,15 +35,40 @@ def objective(trial):
     
     return func(no_trees=no_trees, max_tree_depth=max_tree_depth, bootstrap=bootstrap, min_samples_split=min_samples_split, no_features=no_features, metric=classificationmetrics.KullbackLeiblerDivergence)
 
-start_time = time.perf_counter()
+#Start timer/memory profiler/CPU timer
+start_time = None
+if quantity == 'EXEC-TIME':
+    import time
+    start_time = time.perf_counter_ns()
+elif quantity == 'CPU-TIME':
+    import time
+    start_time = time.process_time_ns()
+elif quantity == 'MAX-MEMORY':
+    import tracemalloc
+    tracemalloc.start()
 
 min_samples_split_search_range = generate_range(2.0, 10.0, 1.0)
 no_features_search_range = generate_range(1.0, 10.0, 1.0)
 search_space = {"no_trees": [1,10,20,30,40], "max_tree_depth": [1, 5, 10, 15, 20], "bootstrap": [True, False], "min_samples_split": min_samples_split_search_range, "no_features": no_features_search_range}
+optuna.logging.set_verbosity(optuna.logging.FATAL)
 study = optuna.create_study(sampler=optuna.samplers.GridSampler(search_space))
 study.optimize(objective, timeout=600)
+
 #resource_usage = getrusage(RUSAGE_SELF)
-end_time = time.perf_counter()
+#End timer/memory profiler/CPU timer
+result = None
+if quantity == 'EXEC-TIME':
+    end_time = time.perf_counter_ns()
+    result = end_time - start_time
+elif quantity == 'CPU-TIME':
+    end_time = time.process_time_ns()
+    result = end_time - start_time
+elif quantity == 'MAX-MEMORY':
+    _, result = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    
 print('\n\n\n')
-print(f'Execution time: {end_time - start_time}')
+print(f'Number of trials: {len(study.trials)}')
+print(f'Best trial: {study.best_trial}')
+print(f'{quantity}: {result}')
 #print(f'Resource usage: {resource_usage}')

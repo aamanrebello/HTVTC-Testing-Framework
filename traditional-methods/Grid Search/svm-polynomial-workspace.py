@@ -17,6 +17,8 @@ import time
 #Library only applicable in linux
 #from resource import getrusage, RUSAGE_SELF
 
+quantity = 'EXEC-TIME'
+
 task = 'classification'
 data = loadData(source='sklearn', identifier='iris', task=task)
 binary_data = extractZeroOneClasses(data)
@@ -33,7 +35,17 @@ def objective(trial):
     
     return func(C=C, gamma=gamma, constant_term=constant_term, degree=degree, metric=classificationmetrics.hingeLoss)
 
-start_time = time.perf_counter()
+#Start timer/memory profiler/CPU timer
+start_time = None
+if quantity == 'EXEC-TIME':
+    import time
+    start_time = time.perf_counter_ns()
+elif quantity == 'CPU-TIME':
+    import time
+    start_time = time.process_time_ns()
+elif quantity == 'MAX-MEMORY':
+    import tracemalloc
+    tracemalloc.start()
 
 C_search_range = generate_range(0.1, 3.0, 0.1)
 gamma_search_range = generate_range(0.1, 3.0, 0.1)
@@ -41,11 +53,26 @@ constant_term_search_range = generate_range(0.0, 3.0, 0.1)
 degree_search_range = generate_range(0.0, 3.0, 0.1)
 
 search_space = {"C": C_search_range, "gamma": gamma_search_range, "constant_term": constant_term_search_range, "degree": degree_search_range}
+optuna.logging.set_verbosity(optuna.logging.FATAL)
 study = optuna.create_study(sampler=optuna.samplers.GridSampler(search_space))
 study.optimize(objective, timeout=600)
+
 #resource_usage = getrusage(RUSAGE_SELF)
-end_time = time.perf_counter()
+#End timer/memory profiler/CPU timer
+result = None
+if quantity == 'EXEC-TIME':
+    end_time = time.perf_counter_ns()
+    result = end_time - start_time
+elif quantity == 'CPU-TIME':
+    end_time = time.process_time_ns()
+    result = end_time - start_time
+elif quantity == 'MAX-MEMORY':
+    _, result = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    
 print('\n\n\n')
-print(f'Execution time: {end_time - start_time}')
+print(f'Number of trials: {len(study.trials)}')
+print(f'Best trial: {study.best_trial}')
+print(f'{quantity}: {result}')
 #print(f'Resource usage: {resource_usage}')
 
