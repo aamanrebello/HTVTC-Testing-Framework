@@ -18,6 +18,8 @@ import time
 #Library only applicable in linux
 #from resource import getrusage, RUSAGE_SELF
 
+quantity = 'EXEC-TIME'
+
 task = 'regression'
 data = loadData(source='sklearn', identifier='diabetes', task=task)
 data_split = trainTestSplit(data)
@@ -32,13 +34,37 @@ def objective(trial):
     
     return func(N=N, weightingFunction=weightingFunction, distanceFunction=distanceFunction, p=p, metric=regressionmetrics.logcosh)
 
-start_time = time.perf_counter()
+#Start timer/memory profiler/CPU timer
+start_time = None
+if quantity == 'EXEC-TIME':
+    import time
+    start_time = time.perf_counter_ns()
+elif quantity == 'CPU-TIME':
+    import time
+    start_time = time.process_time_ns()
+elif quantity == 'MAX-MEMORY':
+    import tracemalloc
+    tracemalloc.start()
 
+optuna.logging.set_verbosity(optuna.logging.FATAL)
 study = optuna.create_study(sampler=TPESampler())
-study.optimize(objective, n_trials=500)
+study.optimize(objective, n_trials=3000)
+
 #resource_usage = getrusage(RUSAGE_SELF)
-end_time = time.perf_counter()
+#End timer/memory profiler/CPU timer
+result = None
+if quantity == 'EXEC-TIME':
+    end_time = time.perf_counter_ns()
+    result = end_time - start_time
+elif quantity == 'CPU-TIME':
+    end_time = time.process_time_ns()
+    result = end_time - start_time
+elif quantity == 'MAX-MEMORY':
+    _, result = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    
 print('\n\n\n')
+print(f'Number of trials: {len(study.trials)}')
 print(f'Best trial: {study.best_trial}')
-print(f'Execution time: {end_time - start_time}')
+print(f'{quantity}: {result}')
 #print(f'Resource usage: {resource_usage}')
