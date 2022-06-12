@@ -29,10 +29,10 @@ func = evaluationFunctionGenerator(data_split, algorithm='svm-polynomial', task=
 
 
 def objective(trial):
-    C = trial.suggest_float("C", 0.1, 3.1, step=0.1)
-    gamma = trial.suggest_float("gamma", 0.1, 3.1, step=0.1)
-    constant_term = trial.suggest_float("constant_term", 0.0, 3.1, step=0.1)
-    degree = trial.suggest_float("degree", 0.0, 3.1, step=0.1)
+    C = trial.suggest_float("C", 0.1, 3.1)
+    gamma = trial.suggest_float("gamma", 0.1, 3.1)
+    constant_term = trial.suggest_float("constant_term", 0.0, 3.1)
+    degree = trial.suggest_float("degree", 0.0, 3.1)
     
     return func(C=C, gamma=gamma, constant_term=constant_term, degree=degree, metric=classificationmetrics.hingeLoss)
 
@@ -50,7 +50,7 @@ elif quantity == 'MAX-MEMORY':
 
 optuna.logging.set_verbosity(optuna.logging.FATAL)
 study = optuna.create_study(sampler=RandomSampler())
-study.optimize(objective, n_trials=500)
+study.optimize(objective, n_trials=3000)
 
 #resource_usage = getrusage(RUSAGE_SELF)
 #End timer/memory profiler/CPU timer

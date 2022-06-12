@@ -18,7 +18,7 @@ import time
 #Library only applicable in linux
 #from resource import getrusage, RUSAGE_SELF
 
-quantity = 'EXEC-TIME'
+quantity = 'MAX-MEMORY'
 
 task = 'classification'
 data = loadData(source='sklearn', identifier='breast_cancer', task=task)
@@ -27,8 +27,8 @@ func = evaluationFunctionGenerator(data_split, algorithm='svm-rbf', task=task)
 
 
 def objective(trial):
-    C = trial.suggest_float("C", 0.05, 5.05, step=0.05)
-    gamma = trial.suggest_float("gamma", 0.05, 5.05, step=0.05)
+    C = trial.suggest_float("C", 0.05, 5.05)
+    gamma = trial.suggest_float("gamma", 0.05, 5.05)
     
     return func(C, gamma, metric=classificationmetrics.indicatorFunction)
 
@@ -46,7 +46,7 @@ elif quantity == 'MAX-MEMORY':
 
 optuna.logging.set_verbosity(optuna.logging.FATAL)
 study = optuna.create_study(sampler=RandomSampler())
-study.optimize(objective, n_trials=500)
+study.optimize(objective, n_trials=3000)
 
 #resource_usage = getrusage(RUSAGE_SELF)
 #End timer/memory profiler/CPU timer

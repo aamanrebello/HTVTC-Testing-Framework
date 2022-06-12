@@ -20,7 +20,7 @@ import time
 #Library only applicable in linux
 #from resource import getrusage, RUSAGE_SELF
 
-quantity = 'EXEC-TIME'
+quantity = 'MAX-MEMORY'
 
 task = 'classification'
 data = loadData(source='sklearn', identifier='wine', task=task)
@@ -51,7 +51,7 @@ elif quantity == 'MAX-MEMORY':
 
 optuna.logging.set_verbosity(optuna.logging.FATAL)
 study = optuna.create_study(sampler=RandomSampler())
-study.optimize(objective, n_trials=500)
+study.optimize(objective, n_trials=3000)
 
 #resource_usage = getrusage(RUSAGE_SELF)
 #End timer/memory profiler/CPU timer
