@@ -16,6 +16,10 @@ import time
 #Library only applicable in linux
 #from resource import getrusage, RUSAGE_SELF
 
+quantity = 'EXEC-TIME'
+trials = 50
+pval = 1
+
 task = 'classification'
 data = loadData(source='sklearn', identifier='wine', task=task)
 binary_data = extractZeroOneClasses(data)
@@ -28,11 +32,20 @@ def objective(N, p, wf):
         weightingFunction = 'distance'
     distanceFunction = 'minkowski'
     #subtract from 1 because the library only supports maximise
-    return 1 - func(N=N, weightingFunction=weightingFunction, distanceFunction=distanceFunction, p=p, metric=classificationmetrics.indicatorFunction)
+    return pval - func(N=N, weightingFunction=weightingFunction, distanceFunction=distanceFunction, p=p, metric=classificationmetrics.indicatorFunction)
 
-#Begin measuring time
-start_time = time.perf_counter()
-
+#Start timer/memory profiler/CPU timer
+start_time = None
+if quantity == 'EXEC-TIME':
+    import time
+    start_time = time.perf_counter_ns()
+elif quantity == 'CPU-TIME':
+    import time
+    start_time = time.process_time_ns()
+elif quantity == 'MAX-MEMORY':
+    import tracemalloc
+    tracemalloc.start()
+    
 #Begin optimisation
 pbounds = {'N': (1, 100), 'p': (1, 100), 'wf': (-1,1)}
 
@@ -40,16 +53,33 @@ optimizer = BayesianOptimization(
     f=objective,
     pbounds=pbounds,
     random_state=1,
+    verbose=0
 )
 
 optimizer.maximize(
-    init_points=2,
-    n_iter=3,
+    init_points=10,
+    n_iter=trials,
 )
 
 #resource_usage = getrusage(RUSAGE_SELF)
-end_time = time.perf_counter()
+#End timer/memory profiler/CPU timer
+result = None
+if quantity == 'EXEC-TIME':
+    end_time = time.perf_counter_ns()
+    result = end_time - start_time
+elif quantity == 'CPU-TIME':
+    end_time = time.process_time_ns()
+    result = end_time - start_time
+elif quantity == 'MAX-MEMORY':
+    _, result = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    
 print('\n\n\n')
-print(f'best combination: {optimizer.max}')
-print(f'Execution time: {end_time - start_time}')
+best = optimizer.max
+best_params = best['params']
+best_score = pval - best['target']
+print(f'Number of trials: {trials}')
+print(f'Best params: {best_params}')
+print(f'Best score: {best_score}')
+print(f'{quantity}: {result}')
 #print(f'Resource usage: {resource_usage}')
