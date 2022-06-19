@@ -8,7 +8,7 @@ sys.path.insert(1, parent_of_parent)
 
 import optuna
 from sklearn.neighbors import KNeighborsRegressor
-from commonfunctions import generate_range
+from commonfunctions import generate_range, truncate_features
 from loaddata import loadData, trainTestSplit, extractZeroOneClasses, convertZeroOne
 import regressionmetrics
 import classificationmetrics
@@ -17,7 +17,7 @@ import time
 #Library only applicable in linux
 #from resource import getrusage, RUSAGE_SELF
 
-quantity = 'EXEC-TIME'
+quantity = 'MAX-MEMORY'
 
 task = 'regression'
 data = loadData(source='sklearn', identifier='diabetes', task=task)
@@ -28,7 +28,8 @@ validation_X = data_split['validation_features']
 validation_y = data_split['validation_labels']
 
 metric=regressionmetrics.logcosh
-resolution = 0.4
+MAX_FEATURES = 10
+MIN_FEATURES = 4
 
 
 def obtain_hyperparameters(trial):
@@ -44,19 +45,18 @@ def objective(trial):
     training_size = len(train_X)
     metric_value = None
 
-    for fraction in generate_range(resolution,1,resolution):
-        #Generate fraction of training data
-        trial_size = int(fraction*training_size)
-        trial_train_X = train_X[:trial_size]
-        trial_train_y = train_y[:trial_size]
+    for no_features in generate_range(MIN_FEATURES,MAX_FEATURES,1):
+        #Generate training and validation data with truncated samples
+        trial_train_X = truncate_features(train_X, int(no_features))
+        trial_validation_X = truncate_features(validation_X, int(no_features))
         #Train model with hyperparameters on data
         clf = KNeighborsRegressor(n_neighbors=int(N), weights=weightingFunction, p=p, metric=distanceFunction)
         #Make prediction
-        clf.fit(trial_train_X, trial_train_y)
-        trial_validation_predictions = clf.predict(validation_X)
+        clf.fit(trial_train_X, train_y)
+        trial_validation_predictions = clf.predict(trial_validation_X)
         metric_value = metric(validation_y, trial_validation_predictions)
         #Check for pruning
-        trial.report(metric_value, fraction)
+        trial.report(metric_value, no_features)
         if trial.should_prune():
             #print('=======================================================================================================')
             raise optuna.TrialPruned()
@@ -81,10 +81,10 @@ optuna.logging.set_verbosity(optuna.logging.FATAL)
 study = optuna.create_study(
     direction="minimize",
     pruner=optuna.pruners.HyperbandPruner(
-        min_resource=resolution, max_resource=1, reduction_factor=2
+        min_resource=MIN_FEATURES, max_resource=MAX_FEATURES, reduction_factor=2
     ),
 )
-study.optimize(objective, n_trials=500)
+study.optimize(objective, n_trials=3000)
 
 #resource_usage = getrusage(RUSAGE_SELF)
 #End timer/memory profiler/CPU timer
