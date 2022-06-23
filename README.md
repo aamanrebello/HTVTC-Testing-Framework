@@ -4,14 +4,14 @@ This framework tests different aspects of hyperparameter tuning via tensor compl
 
 ## Contents
 
-1. [Programs That Can Be Run](programs-that-can-be-run)
-2. [Performance Metrics](performance-metrics)
-3. [Validation Loss Metrics](validation-loss-metrics)
-4. [Traditional Hyperparameter Optimisation Techniques](traditional-hyperparameter-optimisation-techniques)
-5. [Structure of the Framework](structure-of-the-framework)
-6. [Non-Standard Python Library Dependencies](non-standard-python-library-dependencies)
-7. [Version Notes](version-notes)
-8. [Compatibility Issue](compatibility-issue).
+1. [Programs That Can Be Run](#programs-that-can-be-run)
+2. [Performance Metrics](#performance-metrics)
+3. [Validation Loss Metrics](#validation-loss-metrics)
+4. [Traditional Hyperparameter Optimisation Techniques](#traditional-hyperparameter-optimisation-techniques)
+5. [Structure of the Framework](#structure-of-the-framework)
+6. [Non-Standard Python Library Dependencies](#non-standard-python-library-dependencies)
+7. [Version Notes](#version-notes)
+8. [Compatibility Issue](#compatibility-issue).
 
 ## Programs That Can Be Run
 
@@ -43,7 +43,7 @@ These metrics may be found in different testing modules throughout the framework
 
 ## Validation Loss Metrics
 
-These are defined in [`regressionmetrics.py`](./regressionmetrics.py) (univariate regression metrics) and [`classificationmetrics.py](./classificationmetrics.py). Refer to these files for the definitions.
+These are defined in [`regressionmetrics.py`](./regressionmetrics.py) (univariate regression metrics) and [`classificationmetrics.py`](./classificationmetrics.py) (binary classification metrics). Refer to these files for the definitions.
 
 ### Univariate Regression Metrics
 
