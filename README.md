@@ -4,12 +4,16 @@ This contains code for a framework that can test different aspects of hyperparam
 
 ## Programs That Can Be Run
 
-These contain tests that can be run by the end user
+These contain tests that can be run by the end user to evaluate HTVTC and traditional hyperparameter optimisation techniques.
 
 - `*_test.py`: Runs unit tests for the module `*.py`.
+
 - `tensorcompletion_instrumentation.py`: Runs performance measurement tests on large tensors for the tensor completion algorithms.
+
 - `experiments/algo_workspace.py`: Runs correctness tests for HTVTC on saved hyperparameter score tensors for the machine learning algorithm `algo`.
+
 - `experiments/algo_instrumentation.py`: Runs performance tests for HTVTC on the machine learning algorithm `algo` measuring validation loss of the suggested hyperparameter combination and one of execution time (in nanoseconds), CPU utilisation time (in nanoseconds) and maximum memory allocation during runtime (in bytes).
+
 - `traditional-methods/method/algo_workspace.py`: Runs performance tests for traditional hyperparameter optimisation method `method` on machine learning algorithm `algo`, measuring validation loss of the suggested hyperparameter combination and one of execution time (in nanoseconds), CPU utilisation time (in nanoseconds) and maximum memory allocation during runtime (in bytes).
 
 ## Performance Metrics
@@ -32,25 +36,37 @@ These are defined in [`regressionmetrics.py`](./regressionmetrics.py) (univariat
 
 ### Univariate Regression Metrics
 
-- Mean Absolute Error (MAE)
-- Mean Absolute Percentage Error (MAPE)
-- Mean Squared Error (MAPE)
-- Mean Squared Logarithmic Error (MSLE)
-- *logcosh* loss
-- Huber loss with default `delta = 1.35`
-- Posson loss.
+1. Mean Absolute Error (MAE)
+2. Mean Absolute Percentage Error (MAPE)
+3. Mean Squared Error (MAPE)
+4. Mean Squared Logarithmic Error (MSLE)
+5. *logcosh* loss
+6. Huber loss with default `delta = 1.35`
+7. Posson loss.
 
 ### Binary Classification Metrics
 
-- Indicator loss
-- Binary cross-entropy (BCE)
-- Kullback-Leibler divergence (KLD)
-- Jensen-Shannon divergence (JSD)
+1. Indicator loss
+2. Binary cross-entropy (BCE)
+3. Kullback-Leibler divergence (KLD)
+4. Jensen-Shannon divergence (JSD).
+
+
+## Traditional Hyperparameter Optimisation Techniques
+
+- **Grid Search**: Research paper diescribing the technique [here](https://arxiv.org/pdf/2007.15745.pdf) in part 4.1.2. Implementation: `optuna.samplers.GridSampler` docs [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.samplers.GridSampler.html).
+- **Random Search**: Research paper [here](https://jmlr.org/papers/v13/bergstra12a.html). Implementation: `optuna.samplers.RandomSampler` docs [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.samplers.RandomSampler.html).
+- **BO-TPE**: Implementation: `optuna.samplers.TPESampler` docs [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.samplers.TPESampler.html) that also contain links to research papers describing the technique.
+- **CMA-ES**: Implementation `optuna.samplers.CmaEsSampler` docs [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.samplers.CmaEsSampler.html) that also contains links to research papers describing the technique.
+- **BO-GP**: Implementation library: `bayesian-optimization` repo [here](https://github.com/fmfn/BayesianOptimization) with excellent explanations on the technique as well as links to research papers describing the technique.
+- **Hyperband**: Research paper [here](https://www.jmlr.org/papers/volume18/16-558/16-558.pdf). Implementation `optuna.pruners.HyperbandPruner` docs [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.pruners.HyperbandPruner.html).
+- **BOHB**: Research paper [here](https://proceedings.mlr.press/v80/falkner18a.html). Implementation library `bohb-hpo` repo [here](https://github.com/goktug97/bohb-hpo).
+
 
 ## Non-Standard Python Library Dependencies
 
 - **Used throughout the software:** `numpy`, `pandas`, `scipy`, `sklearn`, `tensorly`.
-- **Used in folder [traditional-methods](./traditional-methods)**: `optuna`, `bayesian-optimisation`, `bohb-hpo`.
+- **Used in folder [traditional-methods](./traditional-methods)**: `optuna`, `bayesian-optimization`, `bohb-hpo`.
 - **Used in module [loadddata.py](./loaddata.py)**: `requests`.
 
 ## Version notes
@@ -61,5 +77,5 @@ These are defined in [`regressionmetrics.py`](./regressionmetrics.py) (univariat
  - `sklearn` version 1.1
  - `scipy` version 1.8
  - `optuna` version 2.10
- - `bayesian optimisation` version 1.2
- - `bohb` version 0.5
+ - `bayesian-optimization` version 1.2
+ - `bohb-hpo` version 0.5.
