@@ -51,10 +51,6 @@ These are defined in [`regressionmetrics.py`](./regressionmetrics.py) (univariat
 3. Kullback-Leibler divergence (KLD)
 4. Jensen-Shannon divergence (JSD).
 
-## Structure of the Framework
-
-<img src="https://user-images.githubusercontent.com/56508438/175316361-56a601cc-f9be-4d72-935a-79f36b3287ca.png" alt="drawing" width="500" height="450"/>
-
 ## Traditional Hyperparameter Optimisation Techniques
 
 - **Grid Search**: Research paper diescribing the technique [here](https://arxiv.org/pdf/2007.15745.pdf) in part 4.1.2. Implementation: `optuna.samplers.GridSampler` docs [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.samplers.GridSampler.html).
@@ -65,12 +61,17 @@ These are defined in [`regressionmetrics.py`](./regressionmetrics.py) (univariat
 - **Hyperband**: Research paper [here](https://www.jmlr.org/papers/volume18/16-558/16-558.pdf). Implementation `optuna.pruners.HyperbandPruner` docs [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.pruners.HyperbandPruner.html).
 - **BOHB**: Research paper [here](https://proceedings.mlr.press/v80/falkner18a.html). Implementation library `bohb-hpo` repo [here](https://github.com/goktug97/bohb-hpo).
 
+## Structure of the Framework
+
+<img src="https://user-images.githubusercontent.com/56508438/175316361-56a601cc-f9be-4d72-935a-79f36b3287ca.png" alt="drawing" width="500" height="450"/>
 
 ## Non-Standard Python Library Dependencies
 
 - **Used throughout the software:** `numpy`, `pandas`, `scipy`, `sklearn`, `tensorly`.
 - **Used in folder [traditional-methods](./traditional-methods)**: `optuna`, `bayesian-optimization`, `bohb-hpo`.
 - **Used in module [loadddata.py](./loaddata.py)**: `requests`.
+
+Take note of the [compatibility issue](compatibility-issue) between `bayesian-optimization` and `scipy`.
 
 ## Version notes
  - Python version 3.10
@@ -82,3 +83,9 @@ These are defined in [`regressionmetrics.py`](./regressionmetrics.py) (univariat
  - `optuna` version 2.10
  - `bayesian-optimization` version 1.2
  - `bohb-hpo` version 0.5.
+
+## Compatibility Issue
+
+The following [issue](https://github.com/fmfn/BayesianOptimization/issues/300) describes a compatibility issue between the versions of `bayesian-optimization` and `scipy` described in [version notes](#version-notes). The solution is described in [here](https://github.com/fmfn/BayesianOptimization/pull/303) - it is a simple change that can be made to the `bayesian-optimization` library.
+
+Alternatively, the `bayesian-optimization` library can be downloaded as: `pip install git+https://github.com/fmfn/BayesianOptimization`.
