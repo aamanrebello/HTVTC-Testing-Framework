@@ -10,4 +10,11 @@ This contains code for a framework that can test the tensor completion technique
 
 ## Version notes
  - Python version 3.10
-- `numpy` version 1.22
+ - `tensorly` version 0.7.0
+ - `numpy` version 1.22
+ - `pandas` version 1.4
+ - `sklearn` version 1.1
+ - `scipy` version 1.8
+ - `optuna` version 2.10
+ - `bayesian optimisation` version 1.2
+ - `bohb` version 0.5
