@@ -1,6 +1,17 @@
 # HTVTC-Testing-Framework
 
-This contains code for a framework that can test different aspects of hyperparameter tuning via tensor completion (HTVTC). Experiments on different machine learning models on univariate regression and binary classification may be found in the [experiments](./experiments) folder. Experiments on traditional hyperparameter optimisation techniques on the same problems can be found in the [traditional-methods](./traditional-methods) folder, each technique being experimented with in a different subfolder.
+This framework tests different aspects of hyperparameter tuning via tensor completion (HTVTC). Experiments on different machine learning models for univariate regression and binary classification may be found in the [experiments](./experiments) folder. Experiments on traditional hyperparameter optimisation techniques on the same problems can be found in the [traditional-methods](./traditional-methods) folder, each technique implemented in a different subfolder.
+
+## Contents
+
+1. [Programs That Can Be Run](programs-that-can-be-run)
+2. [Performance Metrics](performance-metrics)
+3. [Validation Loss Metrics](validation-loss-metrics)
+4. [Traditional Hyperparameter Optimisation Techniques](traditional-hyperparameter-optimisation-techniques)
+5. [Structure of the Framework](structure-of-the-framework)
+6. [Non-Standard Python Library Dependencies](non-standard-python-library-dependencies)
+7. [Version Notes](version-notes)
+8. [Compatibility Issue](compatibility-issue).
 
 ## Programs That Can Be Run
 
@@ -73,7 +84,7 @@ These are defined in [`regressionmetrics.py`](./regressionmetrics.py) (univariat
 
 Take note of the [compatibility issue](compatibility-issue) between `bayesian-optimization` and `scipy`.
 
-## Version notes
+## Version Notes
  - Python version 3.10
  - `tensorly` version 0.7.0
  - `numpy` version 1.22
