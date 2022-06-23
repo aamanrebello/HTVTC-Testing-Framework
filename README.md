@@ -51,6 +51,9 @@ These are defined in [`regressionmetrics.py`](./regressionmetrics.py) (univariat
 3. Kullback-Leibler divergence (KLD)
 4. Jensen-Shannon divergence (JSD).
 
+## Structure of the Framework
+
+<img src="https://user-images.githubusercontent.com/56508438/175316361-56a601cc-f9be-4d72-935a-79f36b3287ca.png" alt="drawing" width="500" height="450"/>
 
 ## Traditional Hyperparameter Optimisation Techniques
 
