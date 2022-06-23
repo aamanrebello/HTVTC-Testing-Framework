@@ -57,5 +57,33 @@ if __name__ == '__main__':
 
     opt = BOHB(configspace, evaluate, max_budget=MAXVAL, min_budget=1, eta=2)
 
+    quantity = 'MAX-MEMORY'
+
+    #Start timer/memory profiler/CPU timer
+    start_time = None
+    if quantity == 'EXEC-TIME':
+        import time
+        start_time = time.perf_counter_ns()
+    elif quantity == 'CPU-TIME':
+        import time
+        start_time = time.process_time_ns()
+    elif quantity == 'MAX-MEMORY':
+        import tracemalloc
+        tracemalloc.start()
+
     logs = opt.optimize()
+
+    #End timer/memory profiler/CPU timer
+    result = None
+    if quantity == 'EXEC-TIME':
+        end_time = time.perf_counter_ns()
+        result = end_time - start_time
+    elif quantity == 'CPU-TIME':
+        end_time = time.process_time_ns()
+        result = end_time - start_time
+    elif quantity == 'MAX-MEMORY':
+        _, result = tracemalloc.get_traced_memory()
+        tracemalloc.stop()
+
     print(logs)
+    print(f'{quantity}: {result}')
