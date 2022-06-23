@@ -17,7 +17,7 @@ import time
 #Library only applicable in linux
 #from resource import getrusage, RUSAGE_SELF
 
-quantity = 'MAX-MEMORY'
+quantity = 'EXEC-TIME'
 
 task = 'regression'
 data = loadData(source='sklearn', identifier='diabetes', task=task)
@@ -29,7 +29,7 @@ validation_y = data_split['validation_labels']
 
 metric=regressionmetrics.logcosh
 MAX_FEATURES = 10
-MIN_FEATURES = 4
+MIN_FEATURES = 2
 
 
 def obtain_hyperparameters(trial):

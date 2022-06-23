@@ -17,7 +17,7 @@ import time
 #Library only applicable in linux
 #from resource import getrusage, RUSAGE_SELF
 
-quantity = 'MAX-MEMORY'
+quantity = 'CPU-TIME'
 
 task = 'classification'
 data = loadData(source='sklearn', identifier='wine', task=task)
@@ -30,7 +30,7 @@ validation_y = data_split['validation_labels']
 
 metric=classificationmetrics.indicatorFunction
 MAX_FEATURES = 13
-MIN_FEATURES = 5
+MIN_FEATURES = 2
 
 
 def obtain_hyperparameters(trial):
