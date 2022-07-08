@@ -1,10 +1,9 @@
-from trainmodels import evaluationFunctionGenerator
+from trainmodels import evaluationFunctionGenerator, applyTrainingSamplesBudget, applyTrainingFeaturesBudget
 from loaddata import loadData, trainTestSplit, extractZeroOneClasses, convertZeroOne
 import regressionmetrics
 import classificationmetrics
 import unittest
 
-#---------CURRENTLY UNUSED----------------------------------------
 mockRegressionData = {
     'training_features': [[1,2], [2,2], [0,1], [3,4], [2,3]],
     'validation_features': [[1,1], [3,3]],
@@ -13,12 +12,50 @@ mockRegressionData = {
     }
 
 mockClassificationData = {
-    'training_features': [[1,2], [2,2], [0,1], [3,4], [2,3]],
-    'validation_features': [[1,1], [3,3]],
+    'training_features': [[1,2,3,4], [2,2,1,2], [0,1,0,1], [3,4,4,1], [2,3,4,3]],
+    'validation_features': [[1,1,1,1], [3,3,3,3]],
     'training_labels': [0, 1, 0, 0, 1],
     'validation_labels': [0, 1]
     }
-#------------------------------------------------------------------
+
+
+class TestApplyTrainingSamplesBudget(unittest.TestCase):
+
+    def test_non_truncating_fraction(self):
+        FRACTION = 0.4
+        features, labels = applyTrainingSamplesBudget(mockRegressionData['training_features'], mockRegressionData['training_labels'], FRACTION)
+        self.assertEqual(features, [[1,2], [2,2]])
+        self.assertEqual(labels, [0.1, 0.4])
+
+    def test_truncating_fraction(self):
+        FRACTION = 0.7
+        features, labels = applyTrainingSamplesBudget(mockRegressionData['training_features'], mockRegressionData['training_labels'], FRACTION)
+        self.assertEqual(features, [[1,2], [2,2], [0,1]])
+        self.assertEqual(labels, [0.1, 0.4, 0.0])
+
+    def test_zero_fraction(self):
+        FRACTION = 0.0
+        features, labels = applyTrainingSamplesBudget(mockRegressionData['training_features'], mockRegressionData['training_labels'], FRACTION)
+        self.assertEqual(features, [])
+        self.assertEqual(labels, [])
+
+
+class TestApplyTrainingSamplesBudget(unittest.TestCase):
+
+    def test_non_truncating_fraction(self):
+        FRACTION = 0.5
+        features = applyTrainingFeaturesBudget(mockClassificationData['training_features'], FRACTION)
+        self.assertEqual(features, [[1,2], [2,2], [0,1], [3,4], [2,3]])
+
+    def test_truncating_fraction(self):
+        FRACTION = 0.8
+        features = applyTrainingFeaturesBudget(mockClassificationData['training_features'], FRACTION)
+        self.assertEqual(features, [[1,2,3], [2,2,1], [0,1,0], [3,4,4], [2,3,4]])
+
+    def test_zero_fraction(self):
+        FRACTION = 0.0
+        features = applyTrainingFeaturesBudget(mockClassificationData['training_features'], FRACTION)
+        self.assertEqual(features, [[], [], [], [], []])
 
 
 class TestEvaluationFunctionGenerator(unittest.TestCase):

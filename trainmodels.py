@@ -1,3 +1,23 @@
+#Applies computational budget by constraining training data size to a fraction of
+#the total number of samples
+def applyTrainingSamplesBudget(training_features, training_labels, budget_fraction):
+    training_size = len(training_labels)
+    budgeted_size = int(budget_fraction*training_size)
+    budgeted_training_features = training_features[:budgeted_size]
+    budgeted_training_labels = training_labels[:budgeted_size]
+    return budgeted_training_features, budgeted_training_labels
+
+
+#Applies computational budget by constraining number of features in the training data
+#to a fraction of the total number of features
+def applyTrainingFeaturesBudget(training_features, budget_fraction):
+    features_size = len(training_features[0])
+    budgeted_features = int(budget_fraction*features_size)
+    truncate_features = lambda lst : lst[:budgeted_features]
+    budgeted_training_features = list(map(truncate_features, training_features))
+    return budgeted_training_features
+
+
 # Returns a function 'evaluate' that accepts hyperparameters for the specified
 # machine learning algorithm and evaluates a model trained with these hyperparameters
 # on the validation dataset
