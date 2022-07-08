@@ -21,11 +21,19 @@ def applyTrainingFeaturesBudget(training_features, budget_fraction):
 # Returns a function 'evaluate' that accepts hyperparameters for the specified
 # machine learning algorithm and evaluates a model trained with these hyperparameters
 # on the validation dataset
-def evaluationFunctionGenerator(data, algorithm = 'svm-rbf', task='classification'):
+def evaluationFunctionGenerator(data, algorithm = 'svm-rbf', task='classification', **outerkwargs):
     train_X = data['training_features']
     train_y = data['training_labels']
     validation_X = data['validation_features']
     validation_y = data['validation_labels']
+
+    if 'budget_type' in outerkwargs.keys():
+        if 'budget_fraction' not in outerkwargs.keys():
+            raise ValueError('A budget fraction has not been provided.')
+        if outerkwargs['budget_type'] == 'samples':
+            train_X, train_y = applyTrainingSamplesBudget(training_features, training_labels, budget_fraction)
+        elif outerkwargs['budget_type'] == 'features':
+            train_X = applyTrainingFeaturesBudget(training_features, budget_fraction)
 
     # Ridge regression (1 hyperparameter)
     if algorithm == 'ridge-regression' and task=='regression':

@@ -262,6 +262,47 @@ class TestEvaluationFunctionGenerator(unittest.TestCase):
         self.assertTrue(isinstance(error, float))
         self.assertTrue(error >= 0)
 
+    def test_no_budget_fraction(self):
+        task = 'regression'
+        data = loadData(source='sklearn', identifier='diabetes', task=task)
+        data_split = trainTestSplit(data)
+        
+        test = False
+        try:
+            func = evaluationFunctionGenerator(data_split, algorithm='ridge-regression', task=task, budget_type='samples')
+        except ValueError as inst:
+            self.assertEqual(inst.args[0], 'A budget fraction has not been provided.')
+            test = True
+        self.assertTrue(test)
+
+    def test_sample_budget(self):
+        #Check whether algorithm returns credible results when directly making class predictions
+        task = 'classification'
+        data = loadData(source='sklearn', identifier='iris', task=task, budget_type='samples', budget_fraction=0.5)
+        binary_data = extractZeroOneClasses(data)
+        data_split = trainTestSplit(binary_data)
+        func = evaluationFunctionGenerator(data_split, algorithm='svm-rbf', task=task)
+        self.assertIsNotNone(func)
+        
+        error = func(C=1.0, gamma=0.1, metric=classificationmetrics.indicatorFunction)
+        self.assertIsNotNone(error)
+        self.assertTrue(isinstance(error, float))
+        self.assertTrue(error >= 0)
+
+    def test_feature_budget(self):
+        #Check whether algorithm returns credible results when directly making class predictions
+        task = 'classification'
+        data = loadData(source='sklearn', identifier='iris', task=task, budget_type='features', budget_fraction=0.5)
+        binary_data = extractZeroOneClasses(data)
+        data_split = trainTestSplit(binary_data)
+        func = evaluationFunctionGenerator(data_split, algorithm='svm-rbf', task=task)
+        self.assertIsNotNone(func)
+        
+        error = func(C=1.0, gamma=0.1, metric=classificationmetrics.indicatorFunction)
+        self.assertIsNotNone(error)
+        self.assertTrue(isinstance(error, float))
+        self.assertTrue(error >= 0)
+
     
 if __name__ == '__main__':
     # Run tests
