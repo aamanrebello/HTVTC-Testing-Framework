@@ -10,12 +10,13 @@ def applyTrainingSamplesBudget(training_features, training_labels, budget_fracti
 
 #Applies computational budget by constraining number of features in the training data
 #to a fraction of the total number of features
-def applyTrainingFeaturesBudget(training_features, budget_fraction):
+def applyTrainingFeaturesBudget(training_features, validation_features, budget_fraction):
     features_size = len(training_features[0])
     budgeted_features = int(budget_fraction*features_size)
     truncate_features = lambda lst : lst[:budgeted_features]
     budgeted_training_features = list(map(truncate_features, training_features))
-    return budgeted_training_features
+    budgeted_validation_features = list(map(truncate_features, validation_features))
+    return budgeted_training_features, budgeted_validation_features
 
 
 # Returns a function 'evaluate' that accepts hyperparameters for the specified
@@ -30,10 +31,11 @@ def evaluationFunctionGenerator(data, algorithm = 'svm-rbf', task='classificatio
     if 'budget_type' in outerkwargs.keys():
         if 'budget_fraction' not in outerkwargs.keys():
             raise ValueError('A budget fraction has not been provided.')
+        budget_fraction = outerkwargs['budget_fraction']
         if outerkwargs['budget_type'] == 'samples':
-            train_X, train_y = applyTrainingSamplesBudget(training_features, training_labels, budget_fraction)
+            train_X, train_y = applyTrainingSamplesBudget(train_X, train_y, budget_fraction)
         elif outerkwargs['budget_type'] == 'features':
-            train_X = applyTrainingFeaturesBudget(training_features, budget_fraction)
+            train_X, validation_X = applyTrainingFeaturesBudget(train_X, validation_X, budget_fraction)
 
     # Ridge regression (1 hyperparameter)
     if algorithm == 'ridge-regression' and task=='regression':
