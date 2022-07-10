@@ -21,8 +21,8 @@ import classificationmetrics
 
 
 #OVERALL CONFIGURATION================================
-BASE_PATH = '../experiments/saved-arrays/KNN-classification/'
-FILE_NAME = 'wine-indicator-100-1'
+BASE_PATH = '../experiments/saved-arrays/random-forest/'
+FILE_NAME = 'wine-probability-KLD-5-1'
 ARR_EXTN = '.npy'
 ARR_PATH = BASE_PATH + FILE_NAME + ARR_EXTN
 RANGE_DICT_EXTN = '.json'
@@ -39,13 +39,13 @@ data = loadData(source='sklearn', identifier='wine', task=task)
 binary_data = extractZeroOneClasses(data)
 data_split = trainTestSplit(binary_data)
 
-budget_type = 'features'
-budget_fraction = 0.25
-func = evaluationFunctionGenerator(data_split, algorithm='knn-classification', task=task, budget_type=budget_type, budget_fraction=budget_fraction)
+budget_type = 'samples'
+budget_fraction = 0.5
+func = evaluationFunctionGenerator(data_split, algorithm='random-forest', task=task)
 
 #GENERATE INCOMPLETE TENSOR===========================
 known_fraction = 0.25
-incomplete_tensor, known_indices = generateIncompleteErrorTensor(func, ranges_dict, 1.0, metric=classificationmetrics.indicatorFunction, eval_trials=5)
+incomplete_tensor, known_indices = generateIncompleteErrorTensor(func, ranges_dict, 1.0, metric=classificationmetrics.KullbackLeiblerDivergence, evaluation_mode='probability')
 
 print(f'STAGE 1 - INCOMPLETE AND COMPLETE TENSOR GENERATED')
 
@@ -67,8 +67,8 @@ print(f'STAGE 2 - TRUE BEST COMBINATIONS IDENTIFIED')
 #TEST TENSOR COMPLETION================================
 tensor_norm = np.linalg.norm(tensor)
 
-TT_rank = [3,1]
-Tucker_rank = [2,2,1]
+TT_rank = [1,3,3,3]
+Tucker_rank = [2,2,2,1,3]
 
 class TestTensorCompletion_TMAC_TT(unittest.TestCase):
 

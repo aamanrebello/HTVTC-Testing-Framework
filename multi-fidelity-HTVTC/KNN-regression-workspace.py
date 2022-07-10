@@ -21,8 +21,8 @@ import classificationmetrics
 
 
 #OVERALL CONFIGURATION================================
-BASE_PATH = '../experiments/saved-arrays/KNN-classification/'
-FILE_NAME = 'wine-indicator-100-1'
+BASE_PATH = '../experiments/saved-arrays/KNN-regression/'
+FILE_NAME = 'diabetes-logcosh-100-1'
 ARR_EXTN = '.npy'
 ARR_PATH = BASE_PATH + FILE_NAME + ARR_EXTN
 RANGE_DICT_EXTN = '.json'
@@ -34,18 +34,18 @@ ranges_dict = None
 with open(RANGE_DICT_PATH, 'r') as fp:
     ranges_dict = json.load(fp)
 
-task = 'classification'
-data = loadData(source='sklearn', identifier='wine', task=task)
-binary_data = extractZeroOneClasses(data)
-data_split = trainTestSplit(binary_data)
+task = 'regression'
+data = loadData(source='sklearn', identifier='diabetes', task=task)
+data_split = trainTestSplit(data)
+func = evaluationFunctionGenerator(data_split, algorithm='knn-regression', task=task)
 
 budget_type = 'features'
 budget_fraction = 0.25
-func = evaluationFunctionGenerator(data_split, algorithm='knn-classification', task=task, budget_type=budget_type, budget_fraction=budget_fraction)
+func = evaluationFunctionGenerator(data_split, algorithm='knn-regression', task=task, budget_type=budget_type, budget_fraction=budget_fraction)
 
 #GENERATE INCOMPLETE TENSOR===========================
 known_fraction = 0.25
-incomplete_tensor, known_indices = generateIncompleteErrorTensor(func, ranges_dict, 1.0, metric=classificationmetrics.indicatorFunction, eval_trials=5)
+incomplete_tensor, known_indices = generateIncompleteErrorTensor(func, ranges_dict, 1.0, metric=regressionmetrics.logcosh, eval_trials=5)
 
 print(f'STAGE 1 - INCOMPLETE AND COMPLETE TENSOR GENERATED')
 
@@ -68,7 +68,7 @@ print(f'STAGE 2 - TRUE BEST COMBINATIONS IDENTIFIED')
 tensor_norm = np.linalg.norm(tensor)
 
 TT_rank = [3,1]
-Tucker_rank = [2,2,1]
+Tucker_rank = [2,2,4]
 
 class TestTensorCompletion_TMAC_TT(unittest.TestCase):
 
