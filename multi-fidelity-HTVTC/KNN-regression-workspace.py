@@ -30,6 +30,7 @@ RANGE_DICT_PATH = BASE_PATH + FILE_NAME + '-ranges' + RANGE_DICT_EXTN
 
 #LOAD COMPLETE TENSOR FROM FILE=======================
 tensor = np.load(ARR_PATH)
+tensor = np.squeeze(tensor)
 ranges_dict = None
 with open(RANGE_DICT_PATH, 'r') as fp:
     ranges_dict = json.load(fp)
@@ -37,7 +38,6 @@ with open(RANGE_DICT_PATH, 'r') as fp:
 task = 'regression'
 data = loadData(source='sklearn', identifier='diabetes', task=task)
 data_split = trainTestSplit(data)
-func = evaluationFunctionGenerator(data_split, algorithm='knn-regression', task=task)
 
 budget_type = 'features'
 budget_fraction = 0.25
@@ -46,6 +46,9 @@ func = evaluationFunctionGenerator(data_split, algorithm='knn-regression', task=
 #GENERATE INCOMPLETE TENSOR===========================
 known_fraction = 0.25
 incomplete_tensor, known_indices = generateIncompleteErrorTensor(func, ranges_dict, 1.0, metric=regressionmetrics.logcosh, eval_trials=5)
+incomplete_tensor = np.squeeze(incomplete_tensor)
+removethird = lambda a: (a[0],a[1],a[3])
+known_indices = list(map(removethird, known_indices))
 
 print(f'STAGE 1 - INCOMPLETE AND COMPLETE TENSOR GENERATED')
 

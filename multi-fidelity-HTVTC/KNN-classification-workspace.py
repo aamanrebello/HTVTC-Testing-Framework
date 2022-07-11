@@ -30,6 +30,7 @@ RANGE_DICT_PATH = BASE_PATH + FILE_NAME + '-ranges' + RANGE_DICT_EXTN
 
 #LOAD COMPLETE TENSOR FROM FILE=======================
 tensor = np.load(ARR_PATH)
+tensor = np.squeeze(tensor)
 ranges_dict = None
 with open(RANGE_DICT_PATH, 'r') as fp:
     ranges_dict = json.load(fp)
@@ -46,6 +47,9 @@ func = evaluationFunctionGenerator(data_split, algorithm='knn-classification', t
 #GENERATE INCOMPLETE TENSOR===========================
 known_fraction = 0.25
 incomplete_tensor, known_indices = generateIncompleteErrorTensor(func, ranges_dict, 1.0, metric=classificationmetrics.indicatorFunction, eval_trials=5)
+incomplete_tensor = np.squeeze(incomplete_tensor)
+removethird = lambda a: (a[0],a[1],a[3])
+known_indices = list(map(removethird, known_indices))
 
 print(f'STAGE 1 - INCOMPLETE AND COMPLETE TENSOR GENERATED')
 
