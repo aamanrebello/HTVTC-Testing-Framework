@@ -1,3 +1,5 @@
+import numpy as np
+
 #Applies computational budget by constraining training data size to a fraction of
 #the total number of samples
 def applyTrainingSamplesBudget(training_features, training_labels, budget_fraction):
@@ -185,3 +187,31 @@ def evaluationFunctionGenerator(data, algorithm = 'svm-rbf', task='classificatio
 
     else:
         raise ValueError('The algorithm specified is not recognised.')
+
+
+#Generates a validation function based on cross validation, using evaluationFunctionGenerator
+def crossValidationFunctionGenerator(descriptionDict, algorithm = 'svm-rbf', task='classification', **outerkwargs):
+    evalFunctions = [];
+    trainval_X = np.array(descriptionDict['trainval_features'])
+    trainval_y = np.array(descriptionDict['trainval_labels'])
+    no_splits = descriptionDict['no_splits']
+    for training_indices, val_indices in descriptionDict['index_generator']:
+        training_X, training_y = trainval_X[training_indices], trainval_y[training_indices]
+        val_X, val_y = trainval_X[val_indices], trainval_y[val_indices]
+        data = {
+            'training_features': training_X,
+            'training_labels': training_y,
+            'validation_features': val_X,
+            'validation_labels': val_y
+        }
+        newfunc = evaluationFunctionGenerator(data, algorithm=algorithm, task=task, **outerkwargs)
+        evalFunctions.append(newfunc)
+        
+    def evaluate(*args, **kwargs):
+        result = 0
+        for func in evalFunctions:
+            result += func(*args, **kwargs)
+        return result/no_splits
+        
+    return evaluate
+

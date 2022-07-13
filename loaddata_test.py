@@ -248,6 +248,9 @@ class TestTrainTestSplit(unittest.TestCase):
         self.assertEqual(len(validation_indices), 89)
         self.assertEqual(len(result['test_features']), 0)
         self.assertEqual(len(result['test_labels']), 0)
+        self.assertEqual(len(result['trainval_features']), 442)
+        self.assertEqual(len(result['trainval_labels']), 442)
+                         
 
     def test_cross_validation_zero_validation(self):
         data = loadData('sklearn', 'diabetes', 'regression')

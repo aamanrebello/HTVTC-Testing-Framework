@@ -168,6 +168,8 @@ def trainTestSplit(data_dictionary, method='separate', validation_proportion=0.2
         # Create generator object
         kf = KFold(n_splits=n_splits, shuffle=True)
         return {
+            'trainval_features': X_train_and_validation,
+            'trainval_labels': y_train_and_validation,
             'index_generator': kf.split(X_train_and_validation),
             'no_splits': kf.get_n_splits(X_train_and_validation),
             'test_features': X_test,
