@@ -166,7 +166,7 @@ def trainTestSplit(data_dictionary, method='separate', validation_proportion=0.2
         # Calculate number of folds from proportion of validation data
         n_splits = int(1/rescaled_validation_proportion)
         # Create generator object
-        kf = KFold(n_splits=n_splits, shuffle=True)
+        kf = KFold(n_splits=n_splits, shuffle=False)
         return {
             'trainval_features': X_train_and_validation,
             'trainval_labels': y_train_and_validation,
@@ -179,23 +179,3 @@ def trainTestSplit(data_dictionary, method='separate', validation_proportion=0.2
     else:
         raise ValueError('The specified method to split the data is not recognised.')
 #------------------------------------------------------------------------
-
-
-'''
-method = 'cross_validation'
-data = loadData('local', ONLINE_DOWNLOAD_PATH, feature_attributes=['Close'], label_attributes=['Open'])
-split = trainTestSplit(data, method, validation_proportion=0.1)
-
-if method == 'separate':
-    for key, value in split.items():
-        print(f'{key} size: {len(value)}')
-
-elif method == 'cross-validation':
-    print(split['no_splits'])
-    i = 0
-    for train_index, test_index in split['index_generator']:
-        print("TRAIN:", len(train_index), "TEST:", len(test_index))
-        i += 1
-        if i == 5:
-            break
-'''
