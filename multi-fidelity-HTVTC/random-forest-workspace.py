@@ -76,9 +76,9 @@ print(f'STAGE 1 - COMPLETE TENSOR GENERATED')
         
 
 #GENERATE INCOMPLETE TENSOR===========================
-budget_type = 'samples'
-budget_fraction = 0.5
-budgetfunc = crossValidationFunctionGenerator(data_split, algorithm='random-forest', task=task)
+budget_type = 'features'
+budget_fraction = 0.25
+budgetfunc = crossValidationFunctionGenerator(data_split, algorithm='random-forest', task=task, budget_type=budget_type, budget_fraction=budget_fraction)
         
 known_fraction = 0.25
 incomplete_tensor, known_indices = generateIncompleteErrorTensor(budgetfunc, ranges_dict, known_fraction, metric=classificationmetrics.KullbackLeiblerDivergence, evaluation_mode='probability', eval_trials=1)
@@ -235,7 +235,7 @@ class TestTensorCompletion_TMAC_TT(unittest.TestCase):
         print('-------------------------------')
         print()
 
-
+@unittest.skip('not needed')
 class TestTensorCompletion_Geng_Miles(unittest.TestCase):
 
     def test_Geng_Miles_top10pc(self):
