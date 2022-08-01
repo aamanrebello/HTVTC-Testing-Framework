@@ -10,7 +10,7 @@ p = os.path.abspath('..')
 sys.path.insert(1, p)
 
 from generateerrortensor import generateIncompleteErrorTensor
-from trainmodels import evaluationFunctionGenerator
+from trainmodels import evaluationFunctionGenerator, crossValidationFunctionGenerator
 from loaddata import loadData, trainTestSplit, extractZeroOneClasses, convertZeroOne
 from tensorcompletion import tensorcomplete_TMac_TT
 from tensorcompletion import ket_augmentation, inverse_ket_augmentation
@@ -18,18 +18,18 @@ from tensorsearch import findBestValues, hyperparametersFromIndices
 import regressionmetrics
 import classificationmetrics
 
-quantity = 'MAX-MEMORY'
+quantity = 'CPU-TIME'
 
 known_fraction = 0.25
 
 #Load dataset
 task = 'regression'
 data = loadData(source='sklearn', identifier='diabetes', task=task)
-data_split = trainTestSplit(data)
+data_split = trainTestSplit(data, method = 'cross_validation')
 
-budget_type = 'features'
-budget_fraction = 0.25
-func = evaluationFunctionGenerator(data_split, algorithm='knn-regression', task=task, budget_type=budget_type, budget_fraction=budget_fraction)
+budget_type = 'samples'
+budget_fraction = 0.75
+func = crossValidationFunctionGenerator(data_split, algorithm='knn-regression', task=task, budget_type=budget_type, budget_fraction=budget_fraction)
 
 #Start timer/memory profiler/CPU timer
 a = None
@@ -65,7 +65,7 @@ ranges_dict = {
     }
 
 #Generate incomplete tensor
-incomplete_tensor, known_indices = generateIncompleteErrorTensor(func, ranges_dict, known_fraction, metric=regressionmetrics.logcosh)
+incomplete_tensor, known_indices = generateIncompleteErrorTensor(func, ranges_dict, known_fraction, metric=regressionmetrics.logcosh, eval_trials=1)
 #Remove third dimension of size 1 from tensor and indices
 incomplete_tensor = np.squeeze(incomplete_tensor)
 removethird = lambda a: (a[0],a[1],a[3])
@@ -95,8 +95,10 @@ elif quantity == 'MAX-MEMORY':
     _, result = tracemalloc.get_traced_memory()
     tracemalloc.stop()
 
+#Recreate cross-validation generator
+data_split = trainTestSplit(data, method = 'cross_validation')
 #Find the true loss for the selcted combination
-truefunc = evaluationFunctionGenerator(data_split, algorithm='knn-regression', task=task)    
+truefunc = crossValidationFunctionGenerator(data_split, algorithm='knn-regression', task=task)    
 true_value = truefunc(distanceFunction='minkowski', metric=regressionmetrics.logcosh, **hyperparameter_values[0])
 
 print(f'hyperparameters: {hyperparameter_values}')
