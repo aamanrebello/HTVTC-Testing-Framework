@@ -80,8 +80,8 @@ print(f'STAGE 1 - COMPLETE TENSOR GENERATED')
 
 
 #GENERATE INCOMPLETE TENSOR===========================
-budget_type = 'samples'
-budget_fraction = 0.65
+budget_type = 'features'
+budget_fraction = 0.25
 budgetfunc = crossValidationFunctionGenerator(data_split, algorithm='svm-polynomial', task=task, budget_type=budget_type, budget_fraction=budget_fraction)
 
 known_fraction = 0.25
@@ -239,7 +239,7 @@ class TestTensorCompletion_TMAC_TT(unittest.TestCase):
         print('-------------------------------')
         print()
 
-
+@unittest.skip('not needed')
 class TestTensorCompletion_Geng_Miles(unittest.TestCase):
 
     def test_Geng_Miles_top10pc(self):
