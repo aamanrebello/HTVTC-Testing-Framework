@@ -49,9 +49,9 @@ def sortHyperparameterValues(hyp_dict, reverse=False):
 
 
 #Given a list of indices, return the corresponding hyperparameters in the tensor representation-------
-def hyperparametersFromIndices(index_list, hyperparameter_ranges_dict):
+def hyperparametersFromIndices(index_list, hyperparameter_ranges_dict, ignore_length_1 = False):
     # Throw exception if number of indices is unequal to the number of hyperparameters
-    if len(index_list[0]) != len(hyperparameter_ranges_dict.keys()):
+    if not ignore_length_1 and len(index_list[0]) != len(hyperparameter_ranges_dict.keys()):
         raise ValueError(f'The indices ({len(index_list[0])}) and hyperparameter configuration ({len(hyperparameter_ranges_dict.keys())}) have unequal dimensions.')
     hyperparameter_values = []
     for index in index_list:
@@ -64,11 +64,19 @@ def hyperparametersFromIndices(index_list, hyperparameter_ranges_dict):
             #If the values are already provided as a list
             if 'values' in info.keys():
                 value_list = info['values']
+                #If instructed, remove hypeparameters that only take one value.
+                if ignore_length_1 and len(value_list) == 1:
+                    current_hyperparameter_values[key] = value_list[0]
+                    continue
                 current_hyperparameter_values[key] = value_list[value_list_index]
             #If the values are provided as a range, no need to create a value list
             else:
                 start = float(info['start'])
                 interval = float(info['interval'])
+                #If instructed, remove hypeparameters that only take one value.
+                if ignore_length_1 and start + interval > float(info['end']):
+                    current_hyperparameter_values[key] = start
+                    continue
                 current_hyperparameter_values[key] = start + value_list_index*interval
             dimension_index += 1
         # Update outer values
