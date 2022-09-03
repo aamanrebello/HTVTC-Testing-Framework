@@ -11,7 +11,7 @@ sys.path.insert(1, parent_of_parent)
 import optuna
 from optuna.samplers import RandomSampler
 from commonfunctions import generate_range
-from trainmodels import evaluationFunctionGenerator
+from trainmodels import evaluationFunctionGenerator, crossValidationFunctionGenerator
 from loaddata import loadData, trainTestSplit, extractZeroOneClasses, convertZeroOne
 import regressionmetrics
 import classificationmetrics
@@ -25,8 +25,8 @@ quantity = 'EXEC-TIME'
 task = 'classification'
 data = loadData(source='sklearn', identifier='wine', task=task)
 binary_data = extractZeroOneClasses(data)
-data_split = trainTestSplit(binary_data)
-func = evaluationFunctionGenerator(data_split, algorithm='random-forest', task=task)
+data_split = trainTestSplit(binary_data, method = 'cross_validation')
+func = crossValidationFunctionGenerator(data_split, algorithm='random-forest', task=task)
 
 
 def objective(trial):
@@ -52,7 +52,7 @@ elif quantity == 'MAX-MEMORY':
 
 optuna.logging.set_verbosity(optuna.logging.FATAL)
 study = optuna.create_study(sampler=RandomSampler())
-study.optimize(objective, n_trials=3000)
+study.optimize(objective, n_trials=100)
 
 #resource_usage = getrusage(RUSAGE_SELF)
 #End timer/memory profiler/CPU timer

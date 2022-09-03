@@ -10,7 +10,7 @@ from bohb import BOHB
 import bohb.configspace as cs
 from sklearn import svm
 from commonfunctions import generate_range
-from trainmodels import evaluationFunctionGenerator
+from trainmodels import crossValidationFunctionGenerator
 from loaddata import loadData, trainTestSplit, extractZeroOneClasses, convertZeroOne
 import regressionmetrics
 import classificationmetrics
@@ -18,27 +18,14 @@ import time
 
 task = 'classification'
 data = loadData(source='sklearn', identifier='breast_cancer', task=task)
-data_split = trainTestSplit(data)
-train_X = data_split['training_features']
-train_y = data_split['training_labels']
-validation_X = data_split['validation_features']
-validation_y = data_split['validation_labels']
 
 metric = classificationmetrics.indicatorFunction
 MAXVAL = 10
 
 def objective(fraction, C, gamma):
-    training_size = len(train_X)
-    #Generate fraction of training data
-    trial_size = int(fraction*training_size)
-    trial_train_X = train_X[:trial_size]
-    trial_train_y = train_y[:trial_size]
-    #Train SVM with hyperparameters on data
-    clf = svm.SVC(C = C, kernel = 'rbf', gamma = gamma)
-    #Make prediction
-    clf.fit(trial_train_X, trial_train_y)
-    trial_validation_predictions = clf.predict(validation_X)
-    return metric(validation_y, trial_validation_predictions)
+    data_split = trainTestSplit(data, method='cross_validation')
+    func = crossValidationFunctionGenerator(data_split, algorithm='svm-rbf', task=task, budget_type='samples', budget_fraction=fraction)
+    return func(C, gamma, metric=metric)
     
 def evaluate(params, n_iterations):
     fraction = n_iterations/MAXVAL
@@ -52,7 +39,7 @@ if __name__ == '__main__':
 
     opt = BOHB(configspace, evaluate, max_budget=MAXVAL, min_budget=1, eta=2)
 
-    quantity = 'MAX-MEMORY'
+    quantity = 'EXEC-TIME'
 
     #Start timer/memory profiler/CPU timer
     start_time = None

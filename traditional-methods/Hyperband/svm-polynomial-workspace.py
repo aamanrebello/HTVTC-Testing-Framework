@@ -10,6 +10,7 @@ import optuna
 from sklearn import svm
 from commonfunctions import generate_range
 from loaddata import loadData, trainTestSplit, extractZeroOneClasses, convertZeroOne
+from trainmodels import crossValidationFunctionGenerator
 import regressionmetrics
 import classificationmetrics
 import time
@@ -23,11 +24,6 @@ task = 'classification'
 data = loadData(source='sklearn', identifier='iris', task=task)
 binary_data = extractZeroOneClasses(data)
 adjusted_data = convertZeroOne(binary_data, -1, 1)
-data_split = trainTestSplit(adjusted_data)
-train_X = data_split['training_features']
-train_y = data_split['training_labels']
-validation_X = data_split['validation_features']
-validation_y = data_split['validation_labels']
 
 metric=classificationmetrics.hingeLoss
 resolution = 0.2
@@ -43,21 +39,13 @@ def obtain_hyperparameters(trial):
 
 def objective(trial):
     C, gamma, constant_term, degree = obtain_hyperparameters(trial)
-    training_size = len(train_X)
 
     metric_value = None
 
-    for fraction in generate_range(resolution,1,resolution):
-        #Generate fraction of training data
-        trial_size = int(fraction*training_size)
-        trial_train_X = train_X[:trial_size]
-        trial_train_y = train_y[:trial_size]
-        #Train SVM with hyperparameters on data
-        clf = svm.SVC(C = C, kernel = 'poly', gamma = gamma, coef0 = constant_term, degree = degree)
-        #Make prediction
-        clf.fit(trial_train_X, trial_train_y)
-        trial_validation_predictions = clf.decision_function(validation_X)
-        metric_value = metric(validation_y, trial_validation_predictions)
+    for fraction in generate_range(4*resolution,1,resolution):
+        data_split = trainTestSplit(adjusted_data, method='cross_validation')
+        func = crossValidationFunctionGenerator(data_split, algorithm='svm-polynomial', task=task, budget_type='samples', budget_fraction=fraction)
+        metric_value = func(C, gamma, constant_term, degree, metric=metric)
         #Check for pruning
         trial.report(metric_value, fraction)
         if trial.should_prune():
@@ -86,7 +74,7 @@ study = optuna.create_study(
         min_resource=resolution, max_resource=1, reduction_factor=2
     ),
 )
-study.optimize(objective, n_trials=500)
+study.optimize(objective, n_trials=100)
 
 #resource_usage = getrusage(RUSAGE_SELF)
 #End timer/memory profiler/CPU timer

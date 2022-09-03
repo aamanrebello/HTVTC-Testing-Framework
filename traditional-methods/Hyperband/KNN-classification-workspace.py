@@ -10,6 +10,7 @@ import optuna
 from sklearn.neighbors import KNeighborsClassifier
 from commonfunctions import generate_range, truncate_features
 from loaddata import loadData, trainTestSplit, extractZeroOneClasses, convertZeroOne
+from trainmodels import crossValidationFunctionGenerator
 import regressionmetrics
 import classificationmetrics
 import time
@@ -17,16 +18,11 @@ import time
 #Library only applicable in linux
 #from resource import getrusage, RUSAGE_SELF
 
-quantity = 'CPU-TIME'
+quantity = 'EXEC-TIME'
 
 task = 'classification'
 data = loadData(source='sklearn', identifier='wine', task=task)
 binary_data = extractZeroOneClasses(data)
-data_split = trainTestSplit(binary_data)
-train_X = data_split['training_features']
-train_y = data_split['training_labels']
-validation_X = data_split['validation_features']
-validation_y = data_split['validation_labels']
 
 metric=classificationmetrics.indicatorFunction
 MAX_FEATURES = 13
@@ -43,20 +39,14 @@ def obtain_hyperparameters(trial):
 
 def objective(trial):
     N, p, weightingFunction, distanceFunction = obtain_hyperparameters(trial)
-    training_size = len(train_X)
     #print(training_size)
     metric_value = None
 
     for no_features in generate_range(MIN_FEATURES,MAX_FEATURES,1):
-        #Generate training and validation data with truncated samples
-        trial_train_X = truncate_features(train_X, int(no_features))
-        trial_validation_X = truncate_features(validation_X, int(no_features))
-        #Train model with hyperparameters on data
-        clf = KNeighborsClassifier(n_neighbors=int(N), weights=weightingFunction, p=p, metric=distanceFunction)
-        #Make prediction
-        clf.fit(trial_train_X, train_y)
-        trial_validation_predictions = clf.predict(trial_validation_X)
-        metric_value = metric(validation_y, trial_validation_predictions)
+        fraction = no_features/MAX_FEATURES + 1e-3
+        data_split = trainTestSplit(binary_data, method='cross_validation')
+        func = crossValidationFunctionGenerator(data_split, algorithm='knn-classification', task=task, budget_type='features', budget_fraction=fraction)
+        metric_value = func(N=N, weightingFunction=weightingFunction, distanceFunction=distanceFunction, p=p, metric=metric)
         #Check for pruning
         trial.report(metric_value, no_features)
         if trial.should_prune():
@@ -86,7 +76,7 @@ study = optuna.create_study(
         min_resource=MIN_FEATURES, max_resource=MAX_FEATURES, reduction_factor=2
     ),
 )
-study.optimize(objective, n_trials=3000)
+study.optimize(objective, n_trials=100)
 
 #resource_usage = getrusage(RUSAGE_SELF)
 #End timer/memory profiler/CPU timer

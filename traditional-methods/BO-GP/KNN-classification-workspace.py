@@ -7,7 +7,7 @@ parent_of_parent = os.path.dirname(parent)
 sys.path.insert(1, parent_of_parent)
 
 from bayes_opt import BayesianOptimization
-from trainmodels import evaluationFunctionGenerator
+from trainmodels import evaluationFunctionGenerator, crossValidationFunctionGenerator
 from loaddata import loadData, trainTestSplit, extractZeroOneClasses, convertZeroOne
 import regressionmetrics
 import classificationmetrics
@@ -23,8 +23,8 @@ pval = 1
 task = 'classification'
 data = loadData(source='sklearn', identifier='wine', task=task)
 binary_data = extractZeroOneClasses(data)
-data_split = trainTestSplit(binary_data)
-func = evaluationFunctionGenerator(data_split, algorithm='knn-classification', task=task)
+data_split = trainTestSplit(binary_data, method = 'cross_validation')
+func = crossValidationFunctionGenerator(data_split, algorithm='knn-classification', task=task)
 
 def objective(N, p, wf):
     weightingFunction = 'uniform'

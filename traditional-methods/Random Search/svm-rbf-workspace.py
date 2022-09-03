@@ -9,7 +9,7 @@ sys.path.insert(1, parent_of_parent)
 import optuna
 from optuna.samplers import RandomSampler
 from commonfunctions import generate_range
-from trainmodels import evaluationFunctionGenerator
+from trainmodels import evaluationFunctionGenerator, crossValidationFunctionGenerator
 from loaddata import loadData, trainTestSplit, extractZeroOneClasses, convertZeroOne
 import regressionmetrics
 import classificationmetrics
@@ -18,12 +18,12 @@ import time
 #Library only applicable in linux
 #from resource import getrusage, RUSAGE_SELF
 
-quantity = 'MAX-MEMORY'
+quantity = 'EXEC-TIME'
 
 task = 'classification'
 data = loadData(source='sklearn', identifier='breast_cancer', task=task)
-data_split = trainTestSplit(data)
-func = evaluationFunctionGenerator(data_split, algorithm='svm-rbf', task=task)
+data_split = trainTestSplit(data, method = 'cross_validation')
+func = crossValidationFunctionGenerator(data_split, algorithm='svm-rbf', task=task)
 
 
 def objective(trial):
@@ -46,7 +46,7 @@ elif quantity == 'MAX-MEMORY':
 
 optuna.logging.set_verbosity(optuna.logging.FATAL)
 study = optuna.create_study(sampler=RandomSampler())
-study.optimize(objective, n_trials=3000)
+study.optimize(objective, n_trials=50)
 
 #resource_usage = getrusage(RUSAGE_SELF)
 #End timer/memory profiler/CPU timer

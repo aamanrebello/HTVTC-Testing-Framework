@@ -9,7 +9,7 @@ sys.path.insert(1, parent_of_parent)
 import optuna
 from optuna.samplers import TPESampler
 from commonfunctions import generate_range
-from trainmodels import evaluationFunctionGenerator
+from trainmodels import evaluationFunctionGenerator, crossValidationFunctionGenerator
 from loaddata import loadData, trainTestSplit, extractZeroOneClasses, convertZeroOne
 import regressionmetrics
 import classificationmetrics
@@ -24,8 +24,8 @@ task = 'classification'
 data = loadData(source='sklearn', identifier='iris', task=task)
 binary_data = extractZeroOneClasses(data)
 adjusted_data = convertZeroOne(binary_data, -1, 1)
-data_split = trainTestSplit(adjusted_data)
-func = evaluationFunctionGenerator(data_split, algorithm='svm-polynomial', task=task)
+data_split = trainTestSplit(adjusted_data, method = 'cross_validation')
+func = crossValidationFunctionGenerator(data_split, algorithm='svm-polynomial', task=task)
 
 
 def objective(trial):
@@ -50,7 +50,7 @@ elif quantity == 'MAX-MEMORY':
 
 optuna.logging.set_verbosity(optuna.logging.FATAL)
 study = optuna.create_study(sampler=TPESampler())
-study.optimize(objective, n_trials=3000)
+study.optimize(objective, n_trials=80)
 
 #resource_usage = getrusage(RUSAGE_SELF)
 #End timer/memory profiler/CPU timer

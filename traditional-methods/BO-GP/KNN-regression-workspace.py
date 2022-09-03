@@ -7,7 +7,7 @@ parent_of_parent = os.path.dirname(parent)
 sys.path.insert(1, parent_of_parent)
 
 from bayes_opt import BayesianOptimization
-from trainmodels import evaluationFunctionGenerator
+from trainmodels import evaluationFunctionGenerator, crossValidationFunctionGenerator
 from loaddata import loadData, trainTestSplit, extractZeroOneClasses, convertZeroOne
 import regressionmetrics
 import classificationmetrics
@@ -17,13 +17,13 @@ import time
 #from resource import getrusage, RUSAGE_SELF
 
 quantity = 'EXEC-TIME'
-trials = 50
+trials = 15
 pval = 50
 
 task = 'regression'
-data = loadData(source='sklearn', identifier='diabetes', task=task)
-data_split = trainTestSplit(data)
-func = evaluationFunctionGenerator(data_split, algorithm='knn-regression', task=task)
+data = loadData(source='sklearn', identifier='california_housing', task=task)
+data_split = trainTestSplit(data, method = 'cross_validation')
+func = crossValidationFunctionGenerator(data_split, algorithm='knn-regression', task=task)
 
 
 def objective(N, p, wf):
@@ -32,7 +32,7 @@ def objective(N, p, wf):
         weightingFunction = 'distance'
     distanceFunction = 'minkowski'
     #subtract from 1 because the library only supports maximise
-    return 50 - func(N=N, weightingFunction=weightingFunction, distanceFunction=distanceFunction, p=p, metric=regressionmetrics.logcosh)
+    return 50 - func(N=N, weightingFunction=weightingFunction, distanceFunction=distanceFunction, p=p, metric=regressionmetrics.mae)
 
 #Start timer/memory profiler/CPU timer
 start_time = None
@@ -46,7 +46,7 @@ elif quantity == 'MAX-MEMORY':
     import tracemalloc
     tracemalloc.start()
 
-pbounds = {'N': (1, 100), 'p': (1, 100), 'wf': (-1,1)}
+pbounds = {'N': (1, 100), 'p': (1, 100), 'wf': (-1,0)}
 
 optimizer = BayesianOptimization(
     f=objective,

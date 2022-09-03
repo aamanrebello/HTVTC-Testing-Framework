@@ -10,7 +10,7 @@ from bohb import BOHB
 import bohb.configspace as cs
 from sklearn.neighbors import KNeighborsClassifier
 from commonfunctions import generate_range, truncate_features
-from trainmodels import evaluationFunctionGenerator
+from trainmodels import crossValidationFunctionGenerator
 from loaddata import loadData, trainTestSplit, extractZeroOneClasses, convertZeroOne
 import regressionmetrics
 import classificationmetrics
@@ -20,26 +20,16 @@ import time
 task = 'classification'
 data = loadData(source='sklearn', identifier='wine', task=task)
 binary_data = extractZeroOneClasses(data)
-data_split = trainTestSplit(binary_data)
-train_X = data_split['training_features']
-train_y = data_split['training_labels']
-validation_X = data_split['validation_features']
-validation_y = data_split['validation_labels']
 
 metric = classificationmetrics.indicatorFunction
 MAXVAL = 13
 MINVAL = 2
 
 def objective(no_features, N, p, weightingFunction, distanceFunction):
-    #Generate training and validation data with truncated samples
-    trial_train_X = truncate_features(train_X, int(no_features))
-    trial_validation_X = truncate_features(validation_X, int(no_features))
-    #Train model with hyperparameters on data
-    clf = KNeighborsClassifier(n_neighbors=int(N), weights=weightingFunction, p=p, metric=distanceFunction)
-    #Make prediction
-    clf.fit(trial_train_X, train_y)
-    trial_validation_predictions = clf.predict(trial_validation_X)
-    return metric(validation_y, trial_validation_predictions)
+    fraction = no_features/MAXVAL + 1e-3
+    data_split = trainTestSplit(binary_data, method='cross_validation')
+    func = crossValidationFunctionGenerator(data_split, algorithm='knn-classification', task=task, budget_type='features', budget_fraction=fraction)
+    return func(N=N, weightingFunction=weightingFunction, distanceFunction=distanceFunction, p=p, metric=metric)
     
 def evaluate(params, n_iterations):
     no_features = n_iterations
@@ -55,7 +45,7 @@ if __name__ == '__main__':
 
     opt = BOHB(configspace, evaluate, max_budget=MAXVAL, min_budget=MINVAL, eta=2)
 
-    quantity = 'CPU-TIME'
+    quantity = 'EXEC-TIME'
 
     #Start timer/memory profiler/CPU timer
     start_time = None

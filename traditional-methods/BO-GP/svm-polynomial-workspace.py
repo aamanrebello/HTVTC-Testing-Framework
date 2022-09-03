@@ -7,7 +7,7 @@ parent_of_parent = os.path.dirname(parent)
 sys.path.insert(1, parent_of_parent)
 
 from bayes_opt import BayesianOptimization
-from trainmodels import evaluationFunctionGenerator
+from trainmodels import evaluationFunctionGenerator, crossValidationFunctionGenerator
 from loaddata import loadData, trainTestSplit, extractZeroOneClasses, convertZeroOne
 import regressionmetrics
 import classificationmetrics
@@ -17,15 +17,15 @@ import time
 #from resource import getrusage, RUSAGE_SELF
 
 quantity = 'EXEC-TIME'
-trials = 50
+trials = 10
 pval = 1
 
 task = 'classification'
 data = loadData(source='sklearn', identifier='iris', task=task)
 binary_data = extractZeroOneClasses(data)
 adjusted_data = convertZeroOne(binary_data, -1, 1)
-data_split = trainTestSplit(adjusted_data)
-func = evaluationFunctionGenerator(data_split, algorithm='svm-polynomial', task=task)
+data_split = trainTestSplit(adjusted_data, method = 'cross_validation')
+func = crossValidationFunctionGenerator(data_split, algorithm='svm-polynomial', task=task)
 
 
 def objective(C, gamma, constant_term, degree):
