@@ -60,7 +60,6 @@ def hyperparametersFromIndices(index_list, hyperparameter_ranges_dict, ignore_le
         # Obtain the full lists of values for each hyperparameter from the provided ranges/provided list of values
         for key in hyperparameter_ranges_dict.keys():
             info = hyperparameter_ranges_dict[key]
-            value_list_index = int(index[dimension_index])
             #If the values are already provided as a list
             if 'values' in info.keys():
                 value_list = info['values']
@@ -68,6 +67,7 @@ def hyperparametersFromIndices(index_list, hyperparameter_ranges_dict, ignore_le
                 if ignore_length_1 and len(value_list) == 1:
                     current_hyperparameter_values[key] = value_list[0]
                     continue
+                value_list_index = int(index[dimension_index])
                 current_hyperparameter_values[key] = value_list[value_list_index]
             #If the values are provided as a range, no need to create a value list
             else:
@@ -77,6 +77,7 @@ def hyperparametersFromIndices(index_list, hyperparameter_ranges_dict, ignore_le
                 if ignore_length_1 and start + interval > float(info['end']):
                     current_hyperparameter_values[key] = start
                     continue
+                value_list_index = int(index[dimension_index])
                 current_hyperparameter_values[key] = start + value_list_index*interval
             dimension_index += 1
         # Update outer values
