@@ -21,12 +21,12 @@ import time
 quantity = 'EXEC-TIME'
 
 task = 'regression'
-data = loadData(source='sklearn', identifier='california_housing', task=task)
-
-metric=regressionmetrics.mae
+data = loadData(source='sklearn', identifier='diabetes', task=task)
+metric = regressionmetrics.logcosh
 MAX_FEATURES = 10
-MIN_FEATURES = 2
+MIN_FEATURES = 4
 
+resolution = 0.2
 
 def obtain_hyperparameters(trial):
     N = trial.suggest_int("N", 1, 101, step=1)
@@ -46,7 +46,7 @@ def objective(trial):
         func = crossValidationFunctionGenerator(data_split, algorithm='knn-regression', task=task, budget_type='features', budget_fraction=fraction)
         metric_value = func(N=N, weightingFunction=weightingFunction, distanceFunction=distanceFunction, p=p, metric=metric)
         #Check for pruning
-        trial.report(metric_value, no_features)
+        trial.report(metric_value, fraction)
         if trial.should_prune():
             #print('=======================================================================================================')
             raise optuna.TrialPruned()
@@ -74,7 +74,7 @@ study = optuna.create_study(
         min_resource=MIN_FEATURES, max_resource=MAX_FEATURES, reduction_factor=2
     ),
 )
-study.optimize(objective, n_trials=60)
+study.optimize(objective, n_trials=40)
 
 #resource_usage = getrusage(RUSAGE_SELF)
 #End timer/memory profiler/CPU timer
