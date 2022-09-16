@@ -6,72 +6,123 @@ sys.path.insert(1, parent)
 parent_of_parent = os.path.dirname(parent)
 sys.path.insert(1, parent_of_parent)
 
-from bohb import BOHB
-import bohb.configspace as cs
-from sklearn.ensemble import RandomForestClassifier
+import ConfigSpace as CS
+import ConfigSpace.hyperparameters as CSH
+import hpbandster.core.nameserver as hpns
+import hpbandster.core.result as hpres
+from hpbandster.core.worker import Worker
+from hpbandster.examples.commons import MyWorker
+from hpbandster.optimizers import BOHB as BOHB
+
 from commonfunctions import generate_range
 from trainmodels import crossValidationFunctionGenerator
 from loaddata import loadData, trainTestSplit, extractZeroOneClasses, convertZeroOne
 import regressionmetrics
 import classificationmetrics
-import time
+
+#To hide logs
+import logging
+logObj = logging.getLogger('noOutput')
+logObj.setLevel(100)
+
+#To hide warnings
+import warnings
+warnings.filterwarnings("ignore")
 
 
 task = 'classification'
 data = loadData(source='sklearn', identifier='wine', task=task)
 binary_data = extractZeroOneClasses(data)
-
 metric = classificationmetrics.KullbackLeiblerDivergence
-MAXVAL = 10
 
-def objective(fraction, no_trees, max_tree_depth, bootstrap, min_samples_split, no_features):
-    data_split = trainTestSplit(binary_data, method='cross_validation')
-    func = crossValidationFunctionGenerator(data_split, algorithm='random-forest', task=task, budget_type='samples', budget_fraction=fraction)
-    return func(no_trees=no_trees, max_tree_depth=max_tree_depth, bootstrap=bootstrap, min_samples_split=min_samples_split, no_features=no_features, metric=metric)
+#Define the worker
+class MyWorker(Worker):
+
+    def __init__(self, *args, sleep_interval=0, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.sleep_interval = sleep_interval
+
+    def compute(self, config, budget, **kwargs):
+        data_split = trainTestSplit(binary_data, method='cross_validation')
+        func = crossValidationFunctionGenerator(data_split, algorithm='random-forest', task=task, budget_type='samples', budget_fraction=budget)
+        res = func(**config, metric=metric)
+        
+        return({
+                    'loss': res,
+                    'info': res
+                })
     
-def evaluate(params, n_iterations):
-    fraction = n_iterations/MAXVAL
-    return objective(**params, fraction=fraction)
+    @staticmethod
+    def get_configspace():
+        cs = CS.ConfigurationSpace()
+        bootstrap = CSH.CategoricalHyperparameter('bootstrap', [True, False])
+        cs.add_hyperparameters([bootstrap])
 
+        no_trees = CSH.UniformIntegerHyperparameter('no_trees', lower=1, upper=40)
+        max_tree_depth = CSH.UniformIntegerHyperparameter('max_tree_depth', lower=1, upper=20)
+        min_samples_split = CSH.UniformIntegerHyperparameter('min_samples_split', lower=2, upper=11)
+        no_features = CSH.UniformIntegerHyperparameter('no_features', lower=1, upper=11)
+        cs.add_hyperparameters([no_trees, max_tree_depth, min_samples_split, no_features])
 
-if __name__ == '__main__':
-    no_trees = cs.CategoricalHyperparameter("no_trees", [1,10,20,30,40])
-    max_tree_depth = cs.CategoricalHyperparameter("max_tree_depth", [1, 5, 10, 15, 20])
-    bootstrap = cs.CategoricalHyperparameter("bootstrap", [True, False])
-    min_samples_split = cs.IntegerUniformHyperparameter("min_samples_split", 2, 10)
-    no_features = cs.IntegerUniformHyperparameter("no_features", 1, 10)
-    
-    configspace = cs.ConfigurationSpace([no_trees, max_tree_depth, bootstrap, min_samples_split, no_features])
+        return cs
 
-    opt = BOHB(configspace, evaluate, max_budget=MAXVAL, min_budget=2, eta=2)
+#Setup nameserver
+NS = hpns.NameServer(run_id='rf-wine', host='127.0.0.1', port=None)
+NS.start()
 
-    quantity = 'EXEC-TIME'
+#Start a worker
+w = MyWorker(sleep_interval = 0, nameserver='127.0.0.1',run_id='rf-wine', logger=logObj)
+w.run(background=True)
 
-    #Start timer/memory profiler/CPU timer
-    start_time = None
-    if quantity == 'EXEC-TIME':
-        import time
-        start_time = time.perf_counter_ns()
-    elif quantity == 'CPU-TIME':
-        import time
-        start_time = time.process_time_ns()
-    elif quantity == 'MAX-MEMORY':
-        import tracemalloc
-        tracemalloc.start()
+quantity = 'EXEC-TIME'
 
-    logs = opt.optimize()
+#Start timer/memory profiler/CPU timer
+start_time = None
+if quantity == 'EXEC-TIME':
+    import time
+    start_time = time.perf_counter_ns()
+elif quantity == 'CPU-TIME':
+    import time
+    start_time = time.process_time_ns()
+elif quantity == 'MAX-MEMORY':
+    import tracemalloc
+    tracemalloc.start()
 
-    #End timer/memory profiler/CPU timer
-    result = None
-    if quantity == 'EXEC-TIME':
-        end_time = time.perf_counter_ns()
-        result = end_time - start_time
-    elif quantity == 'CPU-TIME':
-        end_time = time.process_time_ns()
-        result = end_time - start_time
-    elif quantity == 'MAX-MEMORY':
-        _, result = tracemalloc.get_traced_memory()
-        tracemalloc.stop()
-    
-    print(logs)
-    print(f'{quantity}: {result}')
+#Run the optimiser
+MAX_BUDGET = 1.0
+MIN_BUDGET = 0.2
+bohb = BOHB(  configspace = w.get_configspace(),
+              run_id = 'rf-wine', nameserver='127.0.0.1',
+              min_budget=MIN_BUDGET, max_budget=MAX_BUDGET,
+              logger=logObj
+           )
+res = bohb.run(n_iterations=40)
+
+#End timer/memory profiler/CPU timer
+quantity_result = None
+if quantity == 'EXEC-TIME':
+    end_time = time.perf_counter_ns()
+    quantity_result = end_time - start_time
+elif quantity == 'CPU-TIME':
+    end_time = time.process_time_ns()
+    quantity_result = end_time - start_time
+elif quantity == 'MAX-MEMORY':
+    _, quantity_result = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+
+#Shutdown
+bohb.shutdown(shutdown_workers=True)
+NS.shutdown()
+
+id2config = res.get_id2config_mapping()
+inc_id = res.get_incumbent_id()
+inc_runs = res.get_runs_by_id(inc_id)
+inc_run = inc_runs[-1]
+
+print('Best found configuration:', id2config[inc_id]['config'])
+print(f'Validation loss: {inc_run.loss}')
+print('A total of %i unique configurations were sampled.' % len(id2config.keys()))
+print('A total of %i runs were executed.' % len(res.get_all_runs()))
+print('Total budget corresponds to %.1f full function evaluations.'%(sum([r.budget for r in res.get_all_runs()])/MAX_BUDGET))
+print(f'{quantity}: {quantity_result}')
