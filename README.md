@@ -79,7 +79,7 @@ Note that in `DNN_HTVTC.ipynb` and `CNN_HTVTC.ipynb`, the metric used is the imp
 - **CMA-ES**: Implementation `optuna.samplers.CmaEsSampler` docs [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.samplers.CmaEsSampler.html) that also contains links to research papers describing the technique.
 - **BO-GP**: Implementation library: `bayesian-optimization` repo [here](https://github.com/fmfn/BayesianOptimization) with excellent explanations on the technique as well as links to research papers describing the technique.
 - **Hyperband**: Research paper [here](https://www.jmlr.org/papers/volume18/16-558/16-558.pdf). Implementation `optuna.pruners.HyperbandPruner` docs [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.pruners.HyperbandPruner.html).
-- **BOHB**: Research paper [here](https://proceedings.mlr.press/v80/falkner18a.html). Two implementation libraries of BOHB are used: `bohb-hpo`: [repo here](https://github.com/goktug97/bohb-hpo) (as in [experiments/BOHB-impl-1](experiments/BOHB-impl-1)) and `hpbandster`: [docs here](https://automl.github.io/HpBandSter/build/html/index.html). The latter has documentation available and was able to perform mre effective optimisation than the former.
+- **BOHB**: Research paper [here](https://proceedings.mlr.press/v80/falkner18a.html). Two implementation libraries of BOHB are used: `bohb-hpo`: [repo here](https://github.com/goktug97/bohb-hpo) (as in [experiments/BOHB-impl-1](experiments/BOHB-impl-1)) and `hpbandster`: [docs here](https://automl.github.io/HpBandSter/build/html/index.html). The latter has documentation available and was able to perform more effective optimisation than the former.
 
 ## Structure of the Framework
 
