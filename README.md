@@ -69,7 +69,7 @@ These are defined in [`regressionmetrics.py`](./regressionmetrics.py) (univariat
 3. Kullback-Leibler divergence (KLD)
 4. Jensen-Shannon divergence (JSD).
 
-Note that in `DNN_HTVTC.ipynb` and `CNN_HTVTC.ipynb`, the loss function used is the implementation of categorical cross-entropy built into Keras (documentation [here](https://www.tensorflow.org/api_docs/python/tf/keras/losses/CategoricalCrossentropy)). This is because the neural networks are performing a multi-class classification.
+Note that in `DNN_HTVTC.ipynb` and `CNN_HTVTC.ipynb`, the metric used is the implementation of categorical cross-entropy built into Keras (documentation [here](https://www.tensorflow.org/api_docs/python/tf/keras/losses/CategoricalCrossentropy)). This choice of metric is due to the neural networks performing a multi-class classification.
 
 ## Traditional Hyperparameter Optimisation Techniques
 
@@ -79,16 +79,18 @@ Note that in `DNN_HTVTC.ipynb` and `CNN_HTVTC.ipynb`, the loss function used is 
 - **CMA-ES**: Implementation `optuna.samplers.CmaEsSampler` docs [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.samplers.CmaEsSampler.html) that also contains links to research papers describing the technique.
 - **BO-GP**: Implementation library: `bayesian-optimization` repo [here](https://github.com/fmfn/BayesianOptimization) with excellent explanations on the technique as well as links to research papers describing the technique.
 - **Hyperband**: Research paper [here](https://www.jmlr.org/papers/volume18/16-558/16-558.pdf). Implementation `optuna.pruners.HyperbandPruner` docs [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.pruners.HyperbandPruner.html).
-- **BOHB**: Research paper [here](https://proceedings.mlr.press/v80/falkner18a.html). Implementation library `bohb-hpo` repo [here](https://github.com/goktug97/bohb-hpo).
+- **BOHB**: Research paper [here](https://proceedings.mlr.press/v80/falkner18a.html). Two implementation libraries of BOHB are used: `bohb-hpo`: [repo here](https://github.com/goktug97/bohb-hpo) (as in [experiments/BOHB-impl-1](experiments/BOHB-impl-1)) and `hpbandster`: [docs here](https://automl.github.io/HpBandSter/build/html/index.html). The latter has documentation available and was able to perform mre effective optimisation than the former.
 
 ## Structure of the Framework
+
+Note that this image describes the structure of the framework before the file `crosstechnique.py` was added. This new file is based on the cross technique described by Zhang in [this paper](https://doi.org/10.1214/18-AOS1694). The functions within this file offer more efficient replacements to the functionality of `generateerrortensor.py` and `tensorcompletion.py`.
 
 <img src="https://user-images.githubusercontent.com/56508438/175316361-56a601cc-f9be-4d72-935a-79f36b3287ca.png" alt="drawing" width="500" height="450"/>
 
 ## Non-Standard Python Library Dependencies
 
 - **Used throughout the software:** `numpy`, `pandas`, `scipy`, `sklearn`, `tensorly`.
-- **Used in folder [traditional-methods](./traditional-methods)**: `optuna`, `bayesian-optimization`, `bohb-hpo`.
+- **Used in folder [traditional-methods](./traditional-methods)**: `optuna`, `bayesian-optimization`, `bohb-hpo`, `hpbandster`.
 - **Used in module [loadddata.py](./loaddata.py)**: `requests`.
 
 Take note of the [compatibility issue](compatibility-issue) between `bayesian-optimization` and `scipy`.
@@ -102,7 +104,8 @@ Take note of the [compatibility issue](compatibility-issue) between `bayesian-op
  - `scipy` version 1.8
  - `optuna` version 2.10
  - `bayesian-optimization` version 1.2
- - `bohb-hpo` version 0.5.
+ - `bohb-hpo` version 0.5
+ - `hpbandster` version 1.0
 
 ## Compatibility Issue
 
