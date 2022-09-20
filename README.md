@@ -1,6 +1,11 @@
 # HTVTC-Testing-Framework
 
-This framework tests different aspects of hyperparameter tuning via tensor completion (HTVTC). Experiments on different machine learning models for univariate regression and binary classification may be found in the [experiments](./experiments) folder. Experiments on traditional hyperparameter optimisation techniques on the same problems can be found in the [traditional-methods](./traditional-methods) folder, each technique implemented in a different subfolder.
+This framework tests different aspects of hyperparameter tuning via tensor completion (HTVTC):
+- Experiments for an initial iteration of HTVTC on different machine learning models for univariate regression and binary classification may be found in the [experiments](./experiments) folder. 
+- A second iteration of HTVTC, over the same problems, which incorporates multi-fidelity (as used in hyperband and BOHB) is in [multi-fidelity-HTVTC](./multi-fidelity-HTVTC). 
+- Experiments with the final version of the technique are in [final-HTVTC](./final-HTVTC). This final version uses automatic "narrowing down" of the hyperparameter search space over multiple tensor completion cycles, and is competitive with traditional state-of-the-art hyperparameter optimisation techniques in speed and suggestion of optimal hyperparameter combinations.
+- Experiments on traditional hyperparameter optimisation techniques on the same problems can be found in the [traditional-methods](./traditional-methods) folder, each technique implemented in a different subfolder.
+- For certain machine learning problems which are too computationally expensive to optimise on everyday devices like laptops, JuPyter notebooks have been created comparing the final version of HTVTC with traditional hyperparameter optimisation techniques. These notebooks are meant to be run on [Google Colab](https://githubtocolab.com/aamanrebello/HTVTC-Testing-Framework).
 
 ## Contents
 
