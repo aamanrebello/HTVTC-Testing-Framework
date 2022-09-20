@@ -1,11 +1,11 @@
 # HTVTC-Testing-Framework
 
 This framework tests different aspects of hyperparameter tuning via tensor completion (HTVTC):
-- Experiments for an initial iteration of HTVTC on different machine learning models for univariate regression and binary classification may be found in the [experiments](./experiments) folder. 
-- A second iteration of HTVTC, over the same problems, which incorporates multi-fidelity (as used in hyperband and BOHB) is in [multi-fidelity-HTVTC](./multi-fidelity-HTVTC). 
-- Experiments with the final version of the technique are in [final-HTVTC](./final-HTVTC). This final version uses automatic "narrowing down" of the hyperparameter search space over multiple tensor completion cycles, and is competitive with traditional state-of-the-art hyperparameter optimisation techniques in speed and suggestion of optimal hyperparameter combinations.
-- Experiments on traditional hyperparameter optimisation techniques on the same problems can be found in the [traditional-methods](./traditional-methods) folder, each technique implemented in a different subfolder.
-- For certain machine learning problems which are too computationally expensive to optimise on everyday devices like laptops, JuPyter notebooks have been created comparing the final version of HTVTC with traditional hyperparameter optimisation techniques. These notebooks are meant to be run on [Google Colab](https://githubtocolab.com/aamanrebello/HTVTC-Testing-Framework).
+- Experiments for an initial iteration of HTVTC on different machine learning models for univariate regression and binary classification may be found in the [experiments](./experiments) folder. These experiments use separate training and validation sets, rather than cross-validation, to evaluate hyperparameters.
+- A second iteration of HTVTC, over the same problems, which incorporates multi-fidelity (as used in hyperband and BOHB) has its experiments in the folder [multi-fidelity-HTVTC](./multi-fidelity-HTVTC). These experiments use cross-validation to evaluate hyperparameters.
+- Experiments with the final version of the technique are in the folder [final-HTVTC](./final-HTVTC). This final version uses automatic "narrowing down" of the hyperparameter search space over multiple tensor completion cycles, and is competitive with traditional state-of-the-art hyperparameter optimisation techniques in speed and suggestion of optimal hyperparameter combinations. These experiments use cross-validation to evaluate hyperparameters.
+- Experiments on traditional hyperparameter optimisation techniques on the same problems can be found in the [traditional-methods](./traditional-methods) folder, each technique implemented in a different subfolder. These experiments use cross-validation to evaluate hyperparameters.
+- For certain machine learning problems which are too computationally expensive to optimise on everyday devices like laptops, JuPyter notebooks have been created comparing the final version of HTVTC with traditional hyperparameter optimisation techniques. These notebooks are meant to be run on [Google Colab](https://githubtocolab.com/aamanrebello/HTVTC-Testing-Framework). The DNN and CNN experiments use separate training and validation sets, while the random forest covertype experiment uses cross-validation.
 
 ## Contents
 
@@ -20,25 +20,27 @@ This framework tests different aspects of hyperparameter tuning via tensor compl
 
 ## Programs That Can Be Run
 
-These contain tests that can be run by the end user to evaluate HTVTC and traditional hyperparameter optimisation techniques.
+These contain tests that can be run by the end user to evaluate HTVTC and traditional hyperparameter optimisation techniques. Note that no other file depends on these programs as they are intended purely for experimentation. Therefore, they may be modified at will to perform different kinds of experiments.
 
 - `*_test.py`: Runs unit tests for the module `*.py`.
 
 - `tensorcompletion_instrumentation.py`: Runs performance measurement tests on large tensors for the tensor completion algorithms.
 
-- `experiments/algo_workspace.py`: Runs correctness tests for HTVTC on saved hyperparameter score tensors for the machine learning algorithm `algo`.
+- `folder/algo_workspace.py`: When `folder` is `experiments` or `multi-fidelity-HTVTC`, these files run correctness tests for HTVTC on saved hyperparameter score tensors generated using the the machine learning algorithm `algo`. When `folder` is `final-HTVTC`, these files run performance tests for the final HTVTC technique in optimising hyperparameters of machine learning algorithm `algo`. These tests measure validation loss of the suggested hyperparameter combination and one of execution time (in nanoseconds), CPU utilisation time (in nanoseconds) or maximum memory allocated to the program during runtime (in bytes).
 
-- `experiments/algo_instrumentation.py`: Runs performance tests for HTVTC on the machine learning algorithm `algo` measuring validation loss of the suggested hyperparameter combination and one of execution time (in nanoseconds), CPU utilisation time (in nanoseconds) and maximum memory allocation during runtime (in bytes).
+- `experiments/algo_instrumentation.py`: Found in folders `experiments` and `multi-fidelity-HTVTC`: runs performance tests for HTVTC on the machine learning algorithm `algo` measuring validation loss of the suggested hyperparameter combination and one of execution time (in nanoseconds), CPU utilisation time (in nanoseconds) or maximum memory allocation during runtime (in bytes).
 
-- `traditional-methods/method/algo_workspace.py`: Runs performance tests for traditional hyperparameter optimisation method `method` on machine learning algorithm `algo`, measuring validation loss of the suggested hyperparameter combination and one of execution time (in nanoseconds), CPU utilisation time (in nanoseconds) and maximum memory allocation during runtime (in bytes).
+- `traditional-methods/method/algo_workspace.py`: Runs performance tests for traditional hyperparameter optimisation method `method` on machine learning algorithm `algo`, measuring validation loss of the suggested hyperparameter combination and one of execution time (in nanoseconds), CPU utilisation time (in nanoseconds) or maximum memory allocation during runtime (in bytes).
+
+- `*.ipynb`: These notebooks are meant to be run on [Google Colab](https://githubtocolab.com/aamanrebello/HTVTC-Testing-Framework). Each one is for a different machine learning problem, comparing the final version of HTVTC with other traditional hyperparameter optimisation techniques. The notebook `DNN_HTVTC.ipynb` evaluates hyperparameter optimisation of a 3-layer deep neural network performing multi-class classification on the [MNIST data set](http://yann.lecun.com/exdb/mnist/). The notebook `CNN_HTVTC.ipynb` evaluates hyperparameter optimisation of a CNN with three convolutional layers and one deep layer, performing the same multi-class classification task. Finally, `Random_Forest_Covtype.ipynb` evaluates a random forest operating on the (adjusted) [forest cover type data set](https://scikit-learn.org/stable/datasets/real_world.html#forest-covertypes).
 
 ## Performance Metrics
 
-These metrics may be found in different testing modules throughout the framework:
+These metrics may be found in different testing and evaluation modules throughout the framework to evaluate the quality of hyperparameter optimisation:
 
-- **Validation Loss**: The measures the prediction loss of the machine learning model generated from the specified machine algorithm with specified hyperparameters on the validation data set. It is measured using one of the [validation loss metrics](#validation-loss-metrics).
+- **Validation Loss**: The measures the prediction loss of the machine learning model generated from the specified machine algorithm with specified hyperparameters on the validation data set. It is measured using one of the [validation loss metrics](#validation-loss-metrics). In the folder `experiments`, validation loss is calculated using separate training and validation data sets. In folders `traditional-methods`, `multi-fidelity-HTVTC` and `final-HTVTC` validation loss is calculated using cross-validation with 5 folds i.e. a single combined training and validation data set split into five equal parts.
 
-- **Norm of Difference**: The norm (square root of sum of squares of elements) of the difference between the predicted tensor (from tensor completion) and the true tensor. In some cases this may be normalised by dividing by the norm of the true tensor.
+- **Norm of Difference**: The norm (square root of sum of squares of elements) of the difference between the predicted tensor (from tensor completion) and the true tensor. In some cases this may be normalised by dividing by the norm of the true tensor. This is a measure of tensor completion accuracy - the lower this metric, the more accurate the completion is.
 
 - **Execution Time**: Execution time of a critical program segment e.g. tensor completion, hyperparameter optimisation. It is measured using the `perf_counter_ns()` function ([link](https://docs.python.org/3/library/time.html#time.perf_counter_ns) to docs) from the Python standard library `time`.
 
@@ -48,7 +50,7 @@ These metrics may be found in different testing modules throughout the framework
 
 ## Validation Loss Metrics
 
-These are defined in [`regressionmetrics.py`](./regressionmetrics.py) (univariate regression metrics) and [`classificationmetrics.py`](./classificationmetrics.py) (binary classification metrics). Refer to these files for the definitions.
+These are defined in [`regressionmetrics.py`](./regressionmetrics.py) (univariate regression metrics) and [`classificationmetrics.py`](./classificationmetrics.py) (binary classification metrics). Refer to these files for the definitions. These are ultimately used to calculate validation loss so as to compare different trained machine learning models.
 
 ### Univariate Regression Metrics
 
@@ -67,9 +69,11 @@ These are defined in [`regressionmetrics.py`](./regressionmetrics.py) (univariat
 3. Kullback-Leibler divergence (KLD)
 4. Jensen-Shannon divergence (JSD).
 
+Note that in `DNN_HTVTC.ipynb` and `CNN_HTVTC.ipynb`, the loss function used is the implementation of categorical cross-entropy built into Keras (documentation [here](https://www.tensorflow.org/api_docs/python/tf/keras/losses/CategoricalCrossentropy)). This is because the neural networks are performing a multi-class classification.
+
 ## Traditional Hyperparameter Optimisation Techniques
 
-- **Grid Search**: Research paper diescribing the technique [here](https://arxiv.org/pdf/2007.15745.pdf) in part 4.1.2. Implementation: `optuna.samplers.GridSampler` docs [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.samplers.GridSampler.html).
+- **Grid Search**: Research paper describing the technique [here](https://arxiv.org/pdf/2007.15745.pdf) in part 4.1.2. Implementation: `optuna.samplers.GridSampler` docs [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.samplers.GridSampler.html).
 - **Random Search**: Research paper [here](https://jmlr.org/papers/v13/bergstra12a.html). Implementation: `optuna.samplers.RandomSampler` docs [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.samplers.RandomSampler.html).
 - **BO-TPE**: Implementation: `optuna.samplers.TPESampler` docs [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.samplers.TPESampler.html) that also contain links to research papers describing the technique.
 - **CMA-ES**: Implementation `optuna.samplers.CmaEsSampler` docs [here](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.samplers.CmaEsSampler.html) that also contains links to research papers describing the technique.
