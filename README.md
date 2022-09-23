@@ -104,7 +104,7 @@ Take note of the [compatibility issue](compatibility-issue) between `bayesian-op
  - `scipy` version 1.8
  - `optuna` version 2.10
  - `bayesian-optimization` version 1.2
- - `bohb-hpo` version 0.5
+ - `bohb-hpo` version 0.7
  - `hpbandster` version 1.0
 
 ## Compatibility Issue
