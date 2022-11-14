@@ -1,0 +1,1 @@
+{"N": {"type": "INTEGER", "start": 1.0, "end": 100.0, "interval": 1.0}, "weightingFunction": {"type": "CATEGORICAL", "values": ["uniform"]}, "distanceFunction": {"type": "CATEGORICAL", "values": ["minkowski"]}, "p": {"type": "INTEGER", "start": 1.0, "end": 100.0, "interval": 1.0}}
