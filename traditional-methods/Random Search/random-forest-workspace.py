@@ -1,5 +1,6 @@
 import optuna
 from optuna.samplers import RandomSampler
+import json
 #Enable importing code from parent directory
 import os, sys
 current_path = os.getcwd()
@@ -28,6 +29,10 @@ binary_data = extractZeroOneClasses(data)
 data_split = trainTestSplit(binary_data, method = 'cross_validation')
 func = crossValidationFunctionGenerator(data_split, algorithm='random-forest', task=task)
 
+timestamps = []
+validation_losses = []
+best_loss = None
+
 
 def objective(trial):
     no_trees = trial.suggest_int("no_trees", 1, 40, step=1)
@@ -35,8 +40,20 @@ def objective(trial):
     bootstrap = trial.suggest_categorical("bootstrap", [True, False])
     min_samples_split = trial.suggest_int("min_samples_split", 2, 11, step=1)
     no_features = trial.suggest_int("no_features", 1, 11, step=1)
-    
-    return func(no_trees=no_trees, max_tree_depth=max_tree_depth, bootstrap=bootstrap, min_samples_split=min_samples_split, no_features=no_features, metric=classificationmetrics.KullbackLeiblerDivergence)
+
+    loss = func(no_trees=no_trees, max_tree_depth=max_tree_depth, bootstrap=bootstrap, min_samples_split=min_samples_split, no_features=no_features, metric=classificationmetrics.KullbackLeiblerDivergence)
+    timestamp = time.perf_counter_ns()
+    #Update best loss based on received loss value
+    global best_loss
+    if best_loss is None:
+        best_loss = loss
+    else:
+        best_loss = min(best_loss, loss)
+    #Store timestamp and loss
+    timestamps.append(timestamp)
+    validation_losses.append(best_loss)
+    #Return the loss
+    return loss
 
 #Start timer/memory profiler/CPU timer
 start_time = None
@@ -52,7 +69,7 @@ elif quantity == 'MAX-MEMORY':
 
 optuna.logging.set_verbosity(optuna.logging.FATAL)
 study = optuna.create_study(sampler=RandomSampler())
-study.optimize(objective, n_trials=100)
+study.optimize(objective, n_trials=10000)
 
 #resource_usage = getrusage(RUSAGE_SELF)
 #End timer/memory profiler/CPU timer
@@ -72,3 +89,15 @@ print(f'Number of trials: {len(study.trials)}')
 print(f'Best trial: {study.best_trial}')
 print(f'{quantity}: {result}')
 #print(f'Resource usage: {resource_usage}')
+
+#Process time stamps
+for i in range(len(timestamps)):
+    timestamps[i] -= start_time
+
+graph_stats = {
+    'time': timestamps,
+    'loss': validation_losses
+}
+PATH = 'graphs/random-forest.json'
+with open(PATH, 'w') as fp:
+        json.dump(graph_stats , fp)
