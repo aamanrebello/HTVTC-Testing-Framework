@@ -1,0 +1,1 @@
+{"N": {"start": 1.0, "end": 200.0, "interval": 1.0}, "weightingFunction": {"values": ["uniform", "distance"]}, "distanceFunction": {"values": ["minkowski"]}, "p": {"start": 1.0, "end": 200.0, "interval": 1.0}}
