@@ -1,0 +1,1 @@
+{"C": {"start": 0.2, "end": 3.0, "interval": 0.2}, "gamma": {"start": 0.2, "end": 3.0, "interval": 0.2}, "constant_term": {"start": 0.0, "end": 3.0, "interval": 0.2}, "degree": {"start": 0.0, "end": 3.0, "interval": 1.0}}
