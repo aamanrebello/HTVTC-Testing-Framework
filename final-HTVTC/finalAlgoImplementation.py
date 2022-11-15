@@ -121,4 +121,81 @@ def final_HTVTC(ranges_dict, eval_func, metric, **kwargs):
     #return the optimal hyperparameter combination as decided by the algorithm-------------------------------------------
     return selected_combination, history
 
+
+import time
+
+#Repeat of the above function that records the timestamps at the end of each cycle
+def final_HTVTC_profiling(ranges_dict, eval_func, metric, **kwargs):
+
+    # Deal with kwargs that are not passed into tensor generation------------------------------------------------------
+    kwargskeys = kwargs.keys()
+    #The minimum resolution interval required for real-valued hyperparameter. For integers, the minimum is 1.
+    min_interval = 1
+    if 'min_interval' in kwargskeys:
+        min_interval = kwargs['min_interval']
+    #The maximum number of tensor completions that are needed. The algorithm may terminate before completing this many completions.
+    max_completion_cycles = 1
+    if 'max_completion_cycles' in kwargskeys:
+        max_completion_cycles = kwargs['max_completion_cycles']
+    #The maximum number of elements before a grid search can be performed. If 0, this means there will be no grid search.
+    max_size_gridsearch = 0
+    if 'max_size_gridsearch' in kwargskeys:
+        max_size_gridsearch = kwargs['max_size_gridsearch']
+    # The number of evaluations of the evaluation function needed to generate one tensor element.
+    eval_trials = 1
+    if 'eval_trials' in kwargskeys:
+        eval_trials = kwargs['eval_trials']
+
+    #Begin time measurement
+    start_time = time.perf_counter_ns()
+
+    #Perform the repeated tensor completions----------------------------------------------------------------------------
+    history = []
+    selected_combination = None
+    #Used for profiling
+    timestamps = []
+
+    for cycle_num in range(max_completion_cycles):
+        #Perform the tensor completion
+        body, joints, arms = generateCrossComponents(eval_func=eval_func, ranges_dict=ranges_dict, metric=metric, eval_trials=eval_trials, **kwargs)
+        completed_tensor = noisyReconstruction(body, joints, arms)
+        #Find best value
+        bestValue = findBestValues(completed_tensor, smallest=True, number_of_values=1)
+        index_list, value_list = bestValue['indices'], bestValue['values']
+        #Obtain hyperparameter from it
+        combinations = hyperparametersFromIndices(index_list, ranges_dict, ignore_length_1=True)
+        selected_combination = combinations[0]
+        #Add to history
+        history.append({'combination': selected_combination, 'predicted_loss': value_list[0], 'method': 'tensor completion'})
+        #Record timestamp
+        timestamp = time.perf_counter_ns()
+        time_since_start = timestamp - start_time
+        timestamps.append(time_since_start)
+        
+        #If below limit, perform grid search and break.
+        if completed_tensor.size < max_size_gridsearch:
+            #Generate complete tensor
+            full_tensor, _ = generateIncompleteErrorTensor(eval_func=eval_func, ranges_dict=ranges_dict, known_fraction=1, metric=metric, eval_trials=eval_trials, **kwargs)
+            #Find best value
+            bestValue = findBestValues(full_tensor, smallest=True, number_of_values=1)
+            index_list, value_list = bestValue['indices'], bestValue['values']
+            #Obtain hyperparameter from it
+            combinations = hyperparametersFromIndices(index_list, ranges_dict, ignore_length_1=True)
+            selected_combination = combinations[0]
+            #Add to history
+            history.append({'combination': selected_combination, 'predicted_loss': value_list[0], 'method': 'grid search'})
+            #Record timestamp
+            timestamp = time.perf_counter_ns()
+            time_since_start = timestamp - start_time
+            timestamps.append(time_since_start)
+            break
+        
+        #Only need to update the ranges dict if we are using it in the next loop iteration.
+        if cycle_num == max_completion_cycles - 1:
+            break
+        ranges_dict = update_ranges_dict(ranges_dict, selected_combination, min_interval)
+        
+    #return the optimal hyperparameter combination as decided by the algorithm-------------------------------------------
+    return selected_combination, history, timestamps
+
     
