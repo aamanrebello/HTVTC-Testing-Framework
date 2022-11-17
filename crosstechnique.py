@@ -160,10 +160,11 @@ def noisyReconstruction(body, joint_matrices, arm_matrices):
         for s in range(max_s, 0, -1):
             #Condition 1
             trunc_J = J[:s, :s]
-            #If all elements are zero, we cannot invert so set all elements
+            #If all elements are zero, we cannot invert so set diagonal elements
             #to a small value to avoid an error
-            not np.any(arr)
-                trunc_J = np.full(trunc_J.shape, 1e-10)
+            if not np.any(trunc_J):
+                for diag_ind in range(s):
+                    trunc_J[diag_ind, diag_ind] = 1e-10
             if np.linalg.matrix_rank(trunc_J) < s:
                 continue
             #Condition 2
