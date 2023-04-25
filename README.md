@@ -10,7 +10,9 @@ This framework tests different aspects of hyperparameter tuning via tensor compl
 - **A second iteration of HTVTC**, over the same problems, which incorporates **multi-fidelity** (as used in hyperband and BOHB) has its experiments in the folder [multi-fidelity-HTVTC](./multi-fidelity-HTVTC). These experiments use cross-validation to evaluate hyperparameters.
 
 
-- **Experiments with the final version of the technique** are in the folder [final-HTVTC](./final-HTVTC). This final version uses automatic "narrowing down" of the hyperparameter search space over multiple tensor completion cycles, and is competitive with traditional state-of-the-art hyperparameter optimisation techniques in speed and suggestion of optimal hyperparameter combinations. These experiments use cross-validation to evaluate hyperparameters.
+- **Experiments with the final version of the technique** are in the folder [final-HTVTC](./final-HTVTC). This final version uses automatic "narrowing down" of the hyperparameter search space over multiple tensor completion cycles, and is competitive with traditional state-of-the-art hyperparameter optimisation techniques in speed and suggestion of optimal hyperparameter combinations. These experiments use cross-validation to evaluate hyperparameters. *This is the implementation of the technique presented in the ICASSP paper: "TENSOR COMPLETION FOR EFFICIENT AND ACCURATE HYPERPARAMETER
+OPTIMISATION IN LARGE-SCALE STATISTICAL LEARNING".*
+
 
 
 - **Experiments on traditional hyperparameter optimisation techniques** (see the list of these [here](#traditional-hyperparameter-optimisation-techniques)) on the same problems can be found in the [traditional-methods](./traditional-methods) folder, each technique implemented in a different subfolder. These experiments use cross-validation to evaluate hyperparameters.
