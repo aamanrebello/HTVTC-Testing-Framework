@@ -93,7 +93,7 @@ class TestTensorCompletion_Cross(unittest.TestCase):
         #Begin time measurement
         start_time = time.process_time_ns()
         #Cross sample tensor
-        body, joints, arms, no_elements = cross_sample_tensor(tensor, tucker_rank_list=[2,2,2])
+        body, joints, arms, no_elements = cross_sample_tensor(tensor, tucker_rank_list=[2,2,1])
         print(f'sampled elements: {no_elements}')
         print(f'sampled elements ratio: {no_elements/tensor.size}')
         #Apply tensor completion

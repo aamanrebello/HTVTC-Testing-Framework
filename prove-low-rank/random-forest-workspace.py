@@ -93,10 +93,11 @@ tensor_norm = np.linalg.norm(tensor)
 class TestTensorCompletion_Cross(unittest.TestCase):
 
     def test_default_rank(self):
+        print('=================================Low Rank Tensor Completion==============================================================')
         #Begin time measurement
         start_time = time.process_time_ns()
         #Cross sample tensor
-        body, joints, arms, no_elements = cross_sample_tensor(tensor, tucker_rank_list=[1,1,1,1,1])
+        body, joints, arms, no_elements = cross_sample_tensor(tensor, tucker_rank_list=[2,2,2,2,2])
         print(f'sampled elements: {no_elements}')
         print(f'sampled elements ratio: {no_elements/tensor.size}')
         #Apply tensor completion
@@ -129,6 +130,69 @@ class TestTensorCompletion_Cross(unittest.TestCase):
             if true_values[i] != predicted_values[i]:
                 value_disagreement += 1
         print(f'Error in top 10% {norm_error}, value disagreement: {value_disagreement/no_elements_10pc}')
+    
+        completed = True
+        self.assertTrue(completed)
+
+
+    def test_GP_regression(self):
+        print('=================================Compare with GP Regression==============================================================')
+        shape = list(tensor.shape)
+
+        #Used to transform hyperparameter combination dict to a list that can be used for ML
+        def transform_combination(combo_dict):
+            if combo_dict['bootstrap']:
+                combo_dict['L1_activation'] = 1
+            else:
+                combo_dict['L1_activation'] = -1
+            return list(combo_dict.values())
+
+        # Generate training data set
+        TR_hyperparameters = []
+        TR_validation_losses = []
+        for shape_id in range(len(shape)):
+            dim_size = shape[shape_id]
+            base_index = [0]*len(shape)
+            for id in range(dim_size):
+                base_index[shape_id] = id
+                hyperparameter_combination = hyperparametersFromIndices([base_index], ranges_dict, True)[0]
+                validation_loss = tensor[tuple(base_index)]
+                TR_hyperparameters.append(transform_combination(hyperparameter_combination))
+                TR_validation_losses.append(validation_loss)
+
+        # Generate validation data set (the entire tensor)
+        import itertools
+
+        value_lists = []
+        for i in range(len(shape)):
+            value_lists.append([el for el in range(shape[i])])
+        tensor_indices = list(itertools.product(*value_lists))
+
+        VAL_hyperparameters = list(map(transform_combination, hyperparametersFromIndices(tensor_indices, ranges_dict, True)))
+        VAL_validation_losses = [0]*len(tensor_indices)
+        for id in range(len(tensor_indices)):
+            t_id = tuple(tensor_indices[id])
+            VAL_validation_losses[id] = tensor[t_id] 
+
+        # Run GP regression
+        from sklearn.gaussian_process import GaussianProcessRegressor
+        from sklearn.gaussian_process.kernels import DotProduct, WhiteKernel
+        kernel = DotProduct() + WhiteKernel()
+        gpr = GaussianProcessRegressor(kernel=kernel, random_state=0).fit(TR_hyperparameters, TR_validation_losses)
+        predictions, stds = gpr.predict(VAL_hyperparameters, return_std=True)
+
+        #Calculate metrics
+        tensor_norm = np.linalg.norm(tensor)
+        norm_difference_ratio = norm_difference(predictions, VAL_validation_losses)/tensor_norm
+        print(f'Norm  Difference Ratio: {norm_difference_ratio}')
+        sorted_true_loss_indices = np.argsort(VAL_validation_losses)[0:no_elements_10pc]
+        sorted_pred_loss_indices = np.argsort(predictions)[0:no_elements_10pc]
+        common = common_count(sorted_true_loss_indices, sorted_pred_loss_indices)
+        print(f'Common elements in top 10%: {common}')
+        true_values = np.sort(VAL_validation_losses)[0:no_elements_10pc]
+        predicted_values = np.sort(predictions)[0:no_elements_10pc]
+        norm_error = np.linalg.norm(true_values - predicted_values)/(np.linalg.norm(true_values) + 1e-10)
+        print(f'Error in top 10%: {norm_error}')
     
         completed = True
         self.assertTrue(completed)

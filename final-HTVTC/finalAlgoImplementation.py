@@ -145,6 +145,9 @@ def final_HTVTC_profiling(ranges_dict, eval_func, metric, **kwargs):
     eval_trials = 1
     if 'eval_trials' in kwargskeys:
         eval_trials = kwargs['eval_trials']
+    minimise = True
+    if 'minimise' in kwargskeys:
+        minimise = kwargs['minimise']
 
     #Begin time measurement
     start_time = time.perf_counter_ns()
@@ -160,7 +163,7 @@ def final_HTVTC_profiling(ranges_dict, eval_func, metric, **kwargs):
         body, joints, arms = generateCrossComponents(eval_func=eval_func, ranges_dict=ranges_dict, metric=metric, eval_trials=eval_trials, **kwargs)
         completed_tensor = noisyReconstruction(body, joints, arms)
         #Find best value
-        bestValue = findBestValues(completed_tensor, smallest=True, number_of_values=1)
+        bestValue = findBestValues(completed_tensor, smallest=minimise, number_of_values=1)
         index_list, value_list = bestValue['indices'], bestValue['values']
         #Obtain hyperparameter from it
         combinations = hyperparametersFromIndices(index_list, ranges_dict, ignore_length_1=True)
@@ -177,7 +180,7 @@ def final_HTVTC_profiling(ranges_dict, eval_func, metric, **kwargs):
             #Generate complete tensor
             full_tensor, _ = generateIncompleteErrorTensor(eval_func=eval_func, ranges_dict=ranges_dict, known_fraction=1, metric=metric, eval_trials=eval_trials, **kwargs)
             #Find best value
-            bestValue = findBestValues(full_tensor, smallest=True, number_of_values=1)
+            bestValue = findBestValues(full_tensor, smallest=minimise, number_of_values=1)
             index_list, value_list = bestValue['indices'], bestValue['values']
             #Obtain hyperparameter from it
             combinations = hyperparametersFromIndices(index_list, ranges_dict, ignore_length_1=True)
