@@ -66,6 +66,7 @@ def hyperparametersFromIndices(index_list, hyperparameter_ranges_dict, ignore_le
                 #If instructed, remove hypeparameters that only take one value.
                 if ignore_length_1 and len(value_list) == 1:
                     current_hyperparameter_values[key] = value_list[0]
+                    dimension_index += 1
                     continue
                 value_list_index = int(index[dimension_index])
                 current_hyperparameter_values[key] = value_list[value_list_index]
@@ -73,9 +74,10 @@ def hyperparametersFromIndices(index_list, hyperparameter_ranges_dict, ignore_le
             else:
                 start = float(info['start'])
                 interval = float(info['interval'])
-                #If instructed, remove hypeparameters that only take one value.
+                #If instructed, remove hyperparameters that only take one value.
                 if ignore_length_1 and start + interval > float(info['end']):
                     current_hyperparameter_values[key] = start
+                    dimension_index += 1
                     continue
                 value_list_index = int(index[dimension_index])
                 current_hyperparameter_values[key] = start + value_list_index*interval
